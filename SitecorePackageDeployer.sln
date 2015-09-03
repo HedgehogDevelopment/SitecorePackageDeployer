@@ -1,0 +1,60 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{CAA73BB0-EF22-4D79-A57E-DF67B3BA9C80}") = "TestUpdatePackage", "TestUpdatePackage\TestUpdatePackage.scproj", "{7C1509F1-8FF7-4B05-8261-06D61B319030}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestUpdatePackage.Web", "TestUpdatePackage.Web\TestUpdatePackage.Web.csproj", "{F3223389-7AA0-45DB-990B-975E81623926}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".tds", ".tds", "{9C0F240C-E8C3-4864-9C33-CD99F681507A}"
+	ProjectSection(SolutionItems) = preProject
+		TdsGlobal.config = TdsGlobal.config
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hhogdev.SitecorePackageDeployer", "SitecorePackageDeployer\Hhogdev.SitecorePackageDeployer.csproj", "{66BE500A-C01F-49E2-8455-78199F4F352F}"
+EndProject
+Project("{CAA73BB0-EF22-4D79-A57E-DF67B3BA9C80}") = "Hhogdev.SitecorePackageDeployer.TDS", "SitecorePackageDeployer.TDS\Hhogdev.SitecorePackageDeployer.TDS.scproj", "{D16E1B30-7FA4-456B-8DFE-45DFA4EC7900}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hhogdev.SitecorePackageDeployer.Web", "SitecorePackageDeployer.Web\Hhogdev.SitecorePackageDeployer.Web.csproj", "{AE330004-B9AE-465C-AEC2-A5A22CDE8F97}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{41090F22-ABDF-4BAA-95A5-524520A4C1D1}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7C1509F1-8FF7-4B05-8261-06D61B319030}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C1509F1-8FF7-4B05-8261-06D61B319030}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C1509F1-8FF7-4B05-8261-06D61B319030}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{7C1509F1-8FF7-4B05-8261-06D61B319030}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C1509F1-8FF7-4B05-8261-06D61B319030}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C1509F1-8FF7-4B05-8261-06D61B319030}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{F3223389-7AA0-45DB-990B-975E81623926}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3223389-7AA0-45DB-990B-975E81623926}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3223389-7AA0-45DB-990B-975E81623926}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3223389-7AA0-45DB-990B-975E81623926}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66BE500A-C01F-49E2-8455-78199F4F352F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66BE500A-C01F-49E2-8455-78199F4F352F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66BE500A-C01F-49E2-8455-78199F4F352F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66BE500A-C01F-49E2-8455-78199F4F352F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D16E1B30-7FA4-456B-8DFE-45DFA4EC7900}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D16E1B30-7FA4-456B-8DFE-45DFA4EC7900}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D16E1B30-7FA4-456B-8DFE-45DFA4EC7900}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{D16E1B30-7FA4-456B-8DFE-45DFA4EC7900}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D16E1B30-7FA4-456B-8DFE-45DFA4EC7900}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D16E1B30-7FA4-456B-8DFE-45DFA4EC7900}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{AE330004-B9AE-465C-AEC2-A5A22CDE8F97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE330004-B9AE-465C-AEC2-A5A22CDE8F97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE330004-B9AE-465C-AEC2-A5A22CDE8F97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE330004-B9AE-465C-AEC2-A5A22CDE8F97}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
