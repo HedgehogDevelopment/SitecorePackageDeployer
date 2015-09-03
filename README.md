@@ -20,5 +20,5 @@ One of the most popular questions the TDS support team receives about update pac
 
 The Sitecore Package Deployer finds the new .config file(s), makes a backup of the existing .config file(s) and performs the replacement. All this takes place in the method **FindAndUpdateChangedConfigs**. 
 
-Installing the Sitecore Package Deployer
+# Installing the Sitecore Package Deployer
 Download and install the SitecorePackageDeployer update package and install it in Sitecore. The deploy folder will automatically be created in the default location of $(dataFolder)\SitecorePackageDeployer. The Sitecore Package Deployer has been tested with the latest version of Sitecore 7.0, 7.1, 7.2, 7.5 and 8.0
