@@ -28,3 +28,9 @@ The update package installer can be downloaded as an update package from [here](
 
 The Sitecore Package Deployer has been tested with the latest version of Sitecore 7.0, 7.1, 7.2, 7.5 and 8.0
 
+#Modifying the Sitecore Package Deployer
+If you wish to modify Sitecore Package Deployer, simple fork the repository. You may need to make a few simple modifications depending on your local environment. At Hedgehog, we use an internal NuGet server to distribute the Sitecore assemblies. If you follow a similar practice, you should restore the proper NuGet packages and everything should be pointing to the correct locations.
+
+If you do not use NuGet, you will need to add references to the Sitecore .dll's in the **Hhogdev.SitecorePackageDeployer** project and update the location the TDS Update Package Builder uses to locate the Sitecore .dlls. 
+
+Please make sure to all Sitecore assemblies have the CopyLocal property set to false, so they are not included in the deployment or update package. 
