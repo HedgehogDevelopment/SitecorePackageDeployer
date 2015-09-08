@@ -1,5 +1,4 @@
-﻿using log4net;
-using Sitecore.Configuration;
+﻿using Sitecore.Configuration;
 using Sitecore.Diagnostics;
 using Sitecore.IO;
 using Sitecore.Update;
@@ -11,9 +10,6 @@ using Sitecore.Update.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using log4net.spi;
 using Hhogdev.SitecorePackageDeployer.Logging;
 using log4net.Repository.Hierarchy;
@@ -35,6 +31,8 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         string _packageSource;
         //Url to make a request to for restarting the web server
         string _restartUrl;
+        //Determines if the config files should be updated
+         bool _updateConfigurationFiles;
 
         //Indicates that a package is being installed
         static bool _installingPackage;
@@ -50,6 +48,8 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         {
             _packageSource = GetPackageSource();
             _restartUrl = Settings.GetSetting("SitecorePackageDeployer.RestartUrl");
+            _updateConfigurationFiles = Settings.GetBoolSetting("SitecorePackageDeployer.UpdateConfigurationFiles",
+                false);
         }
 
         internal static string GetPackageSource()
@@ -125,7 +125,10 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                             //Run the installer
                             logMessages = UpdateHelper.Install(installationInfo, installLogger, out installationHistoryRoot);
 
-                            FindAndUpdateChangedConfigs(Path.GetFileNameWithoutExtension(updatePackageFilename));
+                            if (_updateConfigurationFiles)
+                            {
+                                FindAndUpdateChangedConfigs(Path.GetFileNameWithoutExtension(updatePackageFilename));
+                            }
 
                             //Sleep for 4 seconds to see if there was a file change that could cause a problem
                             Thread.Sleep(4000);
