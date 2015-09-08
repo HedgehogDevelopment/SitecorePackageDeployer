@@ -38,7 +38,7 @@
     <PackagePublisher>Hedgehog Development</PackagePublisher>
     <PackageReadme>This package tests the package deployer</PackageReadme>
     <PackageVersion>1.0</PackageVersion>
-    <SitecoreAssemblyPath>C:\inetpub\Sitecore\sc8.local\Website\bin</SitecoreAssemblyPath>
+    <SitecoreAssemblyPath>..\packages\SitecoreKernel.7.0.0.131127\lib</SitecoreAssemblyPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugSymbols>false</DebugSymbols>
