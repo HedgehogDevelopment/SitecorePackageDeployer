@@ -48,8 +48,7 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         {
             _packageSource = GetPackageSource();
             _restartUrl = Settings.GetSetting("SitecorePackageDeployer.RestartUrl");
-            _updateConfigurationFiles = Settings.GetBoolSetting("SitecorePackageDeployer.UpdateConfigurationFiles",
-                false);
+            _updateConfigurationFiles = Settings.GetBoolSetting("SitecorePackageDeployer.UpdateConfigurationFiles", true);
         }
 
         internal static string GetPackageSource()
