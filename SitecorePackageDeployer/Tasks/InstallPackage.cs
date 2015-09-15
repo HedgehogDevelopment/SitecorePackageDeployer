@@ -32,7 +32,7 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         //Url to make a request to for restarting the web server
         string _restartUrl;
         //Determines if the config files should be updated
-         bool _updateConfigurationFiles;
+        bool _updateConfigurationFiles;
 
         //Indicates that a package is being installed
         static bool _installingPackage;
@@ -157,12 +157,40 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
 
                             throw ex;
                         }
+                        catch (Exception ex)
+                        {
+                            Log.Error("Package install failed", ex, this);
+
+                            ThreadPool.QueueUserWorkItem(new WaitCallback((ctx) =>
+                            {
+                                try
+                                {
+                                    //The update package may be locked because the file object hasn't been disposed. Wait for it.
+                                    Thread.Sleep(100);
+
+                                    //I really hate this, but I couldn't find another reliable way to ensure the locked file is closed before I move it.
+                                    GC.Collect(2);
+                                    GC.WaitForPendingFinalizers();
+
+                                    File.Move(updatePackageFilename, updatePackageFilename + ".error_" + DateTime.Now.ToString("yyyyMMdd.hhmmss"));
+                                }
+                                catch(Exception ex1)
+                                {
+                                    Log.Error("Error moving broken package", ex1, this);
+                                }
+                            }));
+
+                            break;
+                        }
                         finally
                         {
-                            //Write logs
-                            installLogger.WriteMessages(Path.Combine(installationHistoryRoot, "Install.log"));
+                            if (installationHistoryRoot != null)
+                            {
+                                //Write logs
+                                installLogger.WriteMessages(Path.Combine(installationHistoryRoot, "Install.log"));
 
-                            SaveInstallationMessages(installationHistoryRoot, logMessages);
+                                SaveInstallationMessages(installationHistoryRoot, logMessages);
+                            }
                         }
                     }
                 }
