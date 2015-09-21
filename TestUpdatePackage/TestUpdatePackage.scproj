@@ -33,7 +33,7 @@
     <GeneratePackage>True</GeneratePackage>
     <SeperateFilesAndItems>False</SeperateFilesAndItems>
     <PackageExcludeCode>False</PackageExcludeCode>
-    <AddDateTimeToPackageName>False</AddDateTimeToPackageName>
+    <AddDateTimeToPackageName>True</AddDateTimeToPackageName>
     <PackageAuthor>Charles Turano</PackageAuthor>
     <PackagePublisher>Hedgehog Development</PackagePublisher>
     <PackageReadme>This package tests the package deployer</PackageReadme>

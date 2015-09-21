@@ -295,11 +295,14 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         /// </summary>
         private void FindAndUpdateChangedConfigs(string installPackageName)
         {
-            string appConfigFolder = MainUtil.MapPath("/App_Config");
+            string appConfigFolder = MainUtil.MapPath("/");
 
             foreach (string newConfigFile in Directory.GetFiles(appConfigFolder, "*.config." + installPackageName, SearchOption.AllDirectories))
             {
-                string oldConfigFile = Path.Combine(Path.GetDirectoryName(newConfigFile), Path.GetFileNameWithoutExtension(newConfigFile));
+                Log.Info(string.Format("Found changed config {0}", newConfigFile), this);
+
+                int configExtensionPos = newConfigFile.LastIndexOf(".config") + 7;
+                string oldConfigFile = Path.Combine(Path.GetDirectoryName(newConfigFile), newConfigFile.Substring(0, configExtensionPos));
                 string backupConfigFile = newConfigFile + string.Format(".backup{0:yyyyMMddhhmmss}", DateTime.Now);
 
                 //Backup the existing config file
@@ -310,8 +313,12 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                         File.Delete(backupConfigFile);
                     }
 
+                    Log.Info(string.Format("Backing up config file {0} as {1}", oldConfigFile, backupConfigFile), this);
+
                     File.Move(oldConfigFile, backupConfigFile);
                 }
+
+                Log.Info(string.Format("Copying new config file from {0} to {1}", newConfigFile, oldConfigFile), this);
 
                 //Move the new file into place
                 File.Copy(newConfigFile, oldConfigFile);
