@@ -3,6 +3,7 @@ using Hhogdev.SitecorePackageDeployer.Tasks;
 using Sitecore.Configuration;
 using Sitecore.Diagnostics;
 using Sitecore.Pipelines;
+using Sitecore.SecurityModel;
 using System;
 using System.IO;
 using System.Xml.Serialization;
@@ -44,15 +45,18 @@ namespace Hhogdev.SitecorePackageDeployer.Pipelines.Initialize
             {
                 try
                 {
-                    //Load the post step details
-                    XmlSerializer serializer = new XmlSerializer(typeof(PostStepDetails));
-                    using (TextReader writer = new StreamReader(startupPostStepPackageFile))
+                    using (new SecurityDisabler())
                     {
-                        PostStepDetails details = serializer.Deserialize(writer) as PostStepDetails;
-
-                        if (details != null)
+                        //Load the post step details
+                        XmlSerializer serializer = new XmlSerializer(typeof(PostStepDetails));
+                        using (TextReader writer = new StreamReader(startupPostStepPackageFile))
                         {
-                            InstallPackage.ExecutePostSteps(details);
+                            PostStepDetails details = serializer.Deserialize(writer) as PostStepDetails;
+
+                            if (details != null)
+                            {
+                                InstallPackage.ExecutePostSteps(details);
+                            }
                         }
                     }
                 }
