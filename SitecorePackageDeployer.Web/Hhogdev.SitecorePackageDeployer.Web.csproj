@@ -61,11 +61,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="sitecore\admin\StartSitecorePackageDeployer.aspx.cs">
+      <DependentUpon>StartSitecorePackageDeployer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="sitecore\admin\StartSitecorePackageDeployer.aspx.designer.cs">
+      <DependentUpon>StartSitecorePackageDeployer.aspx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Config\Include\Hhogdev.SitecorePackageDeployer.config">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="sitecore\admin\StartSitecorePackageDeployer.aspx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SitecorePackageDeployer\Hhogdev.SitecorePackageDeployer.csproj">
@@ -99,7 +107,8 @@
     </VisualStudio>
   </ProjectExtensions>
   <PropertyGroup>
-    <PostBuildEvent>del "$(TargetDir)$(TargetName).*"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
