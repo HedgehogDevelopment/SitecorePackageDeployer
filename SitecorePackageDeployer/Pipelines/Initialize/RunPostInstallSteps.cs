@@ -1,5 +1,8 @@
-﻿using Hhogdev.SitecorePackageDeployer.Metadata;
+﻿using Hhogdev.SitecorePackageDeployer.Logging;
+using Hhogdev.SitecorePackageDeployer.Metadata;
 using Hhogdev.SitecorePackageDeployer.Tasks;
+using log4net.Repository.Hierarchy;
+using log4net.spi;
 using Sitecore.Configuration;
 using Sitecore.Diagnostics;
 using Sitecore.Pipelines;
@@ -55,7 +58,16 @@ namespace Hhogdev.SitecorePackageDeployer.Pipelines.Initialize
 
                             if (details != null)
                             {
-                                InstallPackage.ExecutePostSteps(details);
+                                InstallLogger installLogger = new InstallLogger(new RootLogger(Level.ALL));
+
+                                try
+                                {
+                                    InstallPackage.ExecutePostSteps(installLogger, details);
+                                }
+                                finally
+                                {
+                                    installLogger.WriteMessages(Path.Combine(details.HistoryPath, "Install.log"));
+                                }
                             }
                         }
                     }
