@@ -63,10 +63,14 @@ namespace Hhogdev.SitecorePackageDeployer.Pipelines.Initialize
                                 try
                                 {
                                     InstallPackage.ExecutePostSteps(installLogger, details);
+
+                                    InstallPackage.NotifiyPackageComplete(InstallPackage.SUCCESS, details);
                                 }
                                 finally
                                 {
                                     installLogger.WriteMessages(Path.Combine(details.HistoryPath, "Install.log"));
+
+                                    InstallPackage.NotifiyPackageComplete(InstallPackage.FAIL, details);
                                 }
                             }
                         }

@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 namespace Hhogdev.SitecorePackageDeployer.Metadata
 {
     [Serializable]
-    public class PostStepDetails
+    public class CompletionNotification
     {
-        public string PostStepPackageFilename { get; set; }
-        public string HistoryPath { get; set; }
-        public string ResultFileName { get; set; }
+        public string Status { get; set; }
+        public string[] LogLines { get; set; }
+        public string ServerName { get; set; }
     }
 }
