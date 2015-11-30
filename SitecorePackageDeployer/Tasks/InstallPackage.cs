@@ -146,7 +146,7 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                                 }
                                 else
                                 {
-                                    ExecutePostSteps(new PostStepDetails
+                                    ExecutePostSteps(installLogger, new PostStepDetails
                                     {
                                         HistoryPath = installationHistoryRoot,
                                         PostStepPackageFilename = updatePackageFilename
@@ -157,22 +157,24 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                             {
                                 logMessages = ex.Entries;
                                 installationHistoryRoot = ex.HistoryPath;
+                                installLogger.Fatal("Package install failed", ex);
 
                                 throw ex;
                             }
                             catch (Exception ex)
                             {
                                 Log.Error("Package install failed", ex, this);
+                                installLogger.Fatal("Package install failed", ex);
 
                                 ThreadPool.QueueUserWorkItem(new WaitCallback((ctx) =>
                                 {
                                     try
                                     {
-                                    //The update package may be locked because the file object hasn't been disposed. Wait for it.
-                                    Thread.Sleep(100);
+                                        //The update package may be locked because the file object hasn't been disposed. Wait for it.
+                                        Thread.Sleep(100);
 
-                                    //I really hate this, but I couldn't find another reliable way to ensure the locked file is closed before I move it.
-                                    GC.Collect(2);
+                                        //I really hate this, but I couldn't find another reliable way to ensure the locked file is closed before I move it.
+                                        GC.Collect(2);
                                         GC.WaitForPendingFinalizers();
 
                                         File.Move(updatePackageFilename, updatePackageFilename + ".error_" + DateTime.Now.ToString("yyyyMMdd.hhmmss"));
@@ -266,10 +268,8 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         /// Executes the post install steps
         /// </summary>
         /// <param name="postStepDetails"></param>
-        internal static void ExecutePostSteps(PostStepDetails postStepDetails)
+        internal static void ExecutePostSteps(InstallLogger installLogger, PostStepDetails postStepDetails)
         {
-            InstallLogger installLogger = new InstallLogger(new RootLogger(Level.ALL));
-
             try
             {
                 //Load the metadata from the update package
@@ -286,11 +286,8 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
             catch (Exception ex)
             {
                 Log.Fatal("Post step execution failed", ex, "InstallPackage");
-            }
-            finally
-            {
-                //Write logs
-                installLogger.WriteMessages(Path.Combine(postStepDetails.HistoryPath, "Install.log"));
+
+                installLogger.Fatal("Post step execution failed", ex);
             }
         }
 
