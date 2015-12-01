@@ -287,18 +287,25 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                 MetadataView metedateView = UpdateHelper.LoadMetadata(postStepDetails.PostStepPackageFilename);
                 List<ContingencyEntry> logMessages = new List<ContingencyEntry>();
 
-                //Execute the post install steps
-                DiffInstaller diffInstaller = new DiffInstaller(UpgradeAction.Upgrade);
-                diffInstaller.ExecutePostInstallationInstructions(postStepDetails.PostStepPackageFilename, postStepDetails.HistoryPath, InstallMode.Update, metedateView, installLogger, ref logMessages);
-
-                //Move the update package into the history folder
-                File.Move(postStepDetails.PostStepPackageFilename, Path.Combine(postStepDetails.HistoryPath, Path.GetFileName(postStepDetails.PostStepPackageFilename)));
+                try
+                {
+                    //Execute the post install steps
+                    DiffInstaller diffInstaller = new DiffInstaller(UpgradeAction.Upgrade);
+                    diffInstaller.ExecutePostInstallationInstructions(postStepDetails.PostStepPackageFilename, postStepDetails.HistoryPath, InstallMode.Update, metedateView, installLogger, ref logMessages);
+                }
+                finally
+                {
+                    //Move the update package into the history folder
+                    File.Move(postStepDetails.PostStepPackageFilename, Path.Combine(postStepDetails.HistoryPath, Path.GetFileName(postStepDetails.PostStepPackageFilename)));
+                }
             }
             catch (Exception ex)
             {
                 Log.Fatal("Post step execution failed", ex, "InstallPackage");
 
                 installLogger.Fatal("Post step execution failed", ex);
+
+                throw;
             }
         }
 
@@ -356,18 +363,25 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         /// <param name="logMessages"></param>
         private void SaveInstallationMessages(string installationHistoryRoot, List<ContingencyEntry> logMessages)
         {
-            if (string.IsNullOrEmpty(installationHistoryRoot))
+            try
             {
-                installationHistoryRoot = FileUtil.MakePath(FileUtils.InstallationHistoryRoot, "Upgrade_FAILURE_" + DateTime.Now.ToString("yyyyMMddTHHmmss") + DateTime.Now.Millisecond);
+                if (string.IsNullOrEmpty(installationHistoryRoot))
+                {
+                    installationHistoryRoot = FileUtil.MakePath(FileUtils.InstallationHistoryRoot, "Upgrade_FAILURE_" + DateTime.Now.ToString("yyyyMMddTHHmmss") + DateTime.Now.Millisecond);
+                }
+
+                string messagesFile = Path.Combine(installationHistoryRoot, "messages.xml");
+                FileUtil.EnsureFolder(messagesFile);
+
+                using (FileStream fileStream = File.Create(messagesFile))
+                {
+                    XmlEntrySerializer xmlEntrySerializer = new XmlEntrySerializer();
+                    xmlEntrySerializer.Serialize(logMessages, fileStream);
+                }
             }
-
-            string messagesFile = Path.Combine(installationHistoryRoot, "messages.xml");
-            FileUtil.EnsureFolder(messagesFile);
-
-            using (FileStream fileStream = File.Create(messagesFile))
+            catch(Exception ex)
             {
-                XmlEntrySerializer xmlEntrySerializer = new XmlEntrySerializer();
-                xmlEntrySerializer.Serialize(logMessages, fileStream);
+                Log.Fatal("Error saving installation messages", ex, typeof(InstallPackage));
             }
         }
 
