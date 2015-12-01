@@ -66,11 +66,15 @@ namespace Hhogdev.SitecorePackageDeployer.Pipelines.Initialize
 
                                     InstallPackage.NotifiyPackageComplete(InstallPackage.SUCCESS, details);
                                 }
+                                catch(Exception ex)
+                                {
+                                    Log.Fatal("An error occured when running post steps", ex, this);
+
+                                    InstallPackage.NotifiyPackageComplete(InstallPackage.FAIL, details);
+                                }
                                 finally
                                 {
                                     installLogger.WriteMessages(Path.Combine(details.HistoryPath, "Install.log"));
-
-                                    InstallPackage.NotifiyPackageComplete(InstallPackage.FAIL, details);
                                 }
                             }
                         }
