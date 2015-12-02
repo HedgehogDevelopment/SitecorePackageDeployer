@@ -9,6 +9,7 @@ using Sitecore.Pipelines;
 using Sitecore.SecurityModel;
 using System;
 using System.IO;
+using System.Threading;
 using System.Xml.Serialization;
 
 namespace Hhogdev.SitecorePackageDeployer.Pipelines.Initialize
@@ -32,11 +33,22 @@ namespace Hhogdev.SitecorePackageDeployer.Pipelines.Initialize
             try
             {
                 RunPostInitializeStepsIfNeeded();
+
+                InstallAdditionalPackages();
             }
             catch(Exception ex)
             {
                 Log.Error("Failed to complete post initialize steps", ex, this);
             }
+        }
+
+        private void InstallAdditionalPackages()
+        {
+            ThreadPool.QueueUserWorkItem((ctx) =>
+            {
+                InstallPackage installer = new InstallPackage();
+                installer.Run();
+            });
         }
 
         private void RunPostInitializeStepsIfNeeded()
