@@ -399,7 +399,8 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                     CompletionNotification completionNotification = new CompletionNotification
                     {
                         Status = status,
-                        ServerName = Environment.MachineName
+                        ServerName = Environment.MachineName,
+                        DeployHistoryPath = postStepDetails.HistoryPath
                     };
 
                     //Unfortunately, we may not know the installer log folder. If not, don't log the lines in the file
