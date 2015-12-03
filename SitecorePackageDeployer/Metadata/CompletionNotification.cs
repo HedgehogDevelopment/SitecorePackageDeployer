@@ -10,7 +10,6 @@ namespace Hhogdev.SitecorePackageDeployer.Metadata
     public class CompletionNotification
     {
         public string Status { get; set; }
-        public string[] LogLines { get; set; }
         public string ServerName { get; set; }
         public string DeployHistoryPath { get; set; }
     }

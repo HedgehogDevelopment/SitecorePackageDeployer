@@ -403,12 +403,6 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                         DeployHistoryPath = postStepDetails.HistoryPath
                     };
 
-                    //Unfortunately, we may not know the installer log folder. If not, don't log the lines in the file
-                    if (!string.IsNullOrEmpty(postStepDetails.HistoryPath))
-                    {
-                        completionNotification.LogLines = File.ReadAllLines(Path.Combine(postStepDetails.HistoryPath, "install.log"));
-                    }
-
                     sw.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(completionNotification));
                 }
             }
