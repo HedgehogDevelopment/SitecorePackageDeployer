@@ -62,4 +62,6 @@
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
 
+
+# Do not adjust line endings on Sitecore .item files
 *.item -text

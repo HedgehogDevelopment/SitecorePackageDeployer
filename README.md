@@ -17,11 +17,25 @@ If there are changes to the Sitecore configs or binaries during the installation
 
 If Sitecore is restarting, the Sitecore Package Deployer will make an HTTP request to the cms website just before shutting down to attempt to restart the server automatically. In some cases, the url for the server can't be determined, so the url from the setting **SitecorePackageDeployer.RestartUrl** is used instead.
 
+Upon completion of the package install, the package deployer will deposit a .json file in the Sitecore Package Deployer folder with the same name as the update package. This .json file contains the results of the package installation. The contents look something like:
+
+    {
+        "Status": "Success",
+        "ServerName": "[Server]",
+        "DeployHistoryPath": "[Path to Sitecore]\\Website\\temp\\__UpgradeHistory\\Upgrade_TestUpdatePackage_20160401_1316_20160401T171959991"
+    }
 
 # Config files
 One of the most popular questions the TDS support team receives about update packages questions the way Sitecore handles config files. When the update package installer determines that a config file needs to be replaced, the Sitecore installer creates config with a new name and leaves the original file in place. The replacement of the file is done manually by the developer performing the install. This makes it much more difficult to automate the installation process.
 
 To make the deployment fully automatic, the Sitecore Package Deployer finds the new .config file(s), makes a backup of the existing .config file(s) and performs the replacement automatically. This happens before the post steps are run, and will cause the AppPool to recycle. 
+
+# On Demand Deployment
+The package deployer can also run in an "On Demand" mode. This allows you to have more control over when the deployer runs. To use On Demand mode, you need to do two things:
+
+1. Remove the scheduled job line in the config file
+1. Have the ability to make an Http request to the url [server]/sitecore/admin/StartSitecorePackageDeployer.aspx
+
 
 # Installing the Sitecore Package Deployer
 The update package installer can be downloaded as an update package from [here](https://github.com/HedgehogDevelopment/SitecorePackageDeployer/blob/master/Hhogdev.SitecorePackageDeployer_v1.0.update?raw=true). This is an update package and can be installed using the Update Installation Wizard in Sitecore. Once it is installed, the deploy folder will automatically be created in the default location of **$(dataFolder)\SitecorePackageDeployer**. Simply drop your update packages in that location and they will be automatically installed.

@@ -93,5 +93,17 @@
       <ItemDeployment>DeployOnce</ItemDeployment>
     </SitecoreItem>
   </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <PostDeployAction Include="HedgehogDevelopment.SitecoreProject.PackageInstallPostProcessor.BuiltIn.PublishDeployedItems, HedgehogDevelopment.SitecoreProject.PackageInstallPostProcessor">
+      <Parameter>Internet</Parameter>
+      <Order>3</Order>
+    </PostDeployAction>
+    <PostDeployAction Include="HedgehogDevelopment.SitecoreProject.PackageInstallPostProcessor.BuiltIn.TriggerSaveEventsForPublishedItems, HedgehogDevelopment.SitecoreProject.PackageInstallPostProcessor">
+      <Order>1</Order>
+    </PostDeployAction>
+    <PostDeployAction Include="HedgehogDevelopment.SitecoreProject.PackageInstallPostProcessor.BuiltIn.UpdateLinkDatabaseForDeployedItems, HedgehogDevelopment.SitecoreProject.PackageInstallPostProcessor">
+      <Order>2</Order>
+    </PostDeployAction>
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\HedgehogDevelopment\SitecoreProject\v9.0\HedgehogDevelopment.SitecoreProject.targets" Condition="Exists('$(MSBuildExtensionsPath)\HedgehogDevelopment\SitecoreProject\v9.0\HedgehogDevelopment.SitecoreProject.targets')" />
 </Project>

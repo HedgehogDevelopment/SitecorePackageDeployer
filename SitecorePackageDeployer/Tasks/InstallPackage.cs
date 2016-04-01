@@ -27,6 +27,8 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
     public class InstallPackage
     {
         internal const string STARTUP_POST_STEP_PACKAGE_FILENAME = "StartPostStepPackage.xml";
+        internal const string SUCCESS = "Success";
+        internal const string FAIL = "Fail";
 
         //Points at the folder where new packages will be stored
         string _packageSource;
@@ -122,10 +124,19 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                             string installationHistoryRoot = null;
                             List<ContingencyEntry> logMessages = new List<ContingencyEntry>();
 
+                            PostStepDetails postStepDetails = new PostStepDetails
+                            {
+                                PostStepPackageFilename = updatePackageFilename,
+                                ResultFileName = Path.Combine(Path.GetDirectoryName(updatePackageFilename), Path.GetFileNameWithoutExtension(updatePackageFilename) + ".json")
+                            };
+
+                            string installStatus = null;
+
                             try
                             {
                                 //Run the installer
                                 logMessages = UpdateHelper.Install(installationInfo, installLogger, out installationHistoryRoot);
+                                postStepDetails.HistoryPath = installationHistoryRoot;
 
                                 if (_updateConfigurationFiles)
                                 {
@@ -138,7 +149,7 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                                 //Abort if Sitecore is shutting down. The install post steps will have to be completed later
                                 if (ShutdownDetected)
                                 {
-                                    RunPostStepsAtStartup(updatePackageFilename, installationHistoryRoot);
+                                    RunPostStepsAtStartup(updatePackageFilename, installationHistoryRoot, postStepDetails);
 
                                     RestartSitecoreServer();
 
@@ -146,15 +157,14 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                                 }
                                 else
                                 {
-                                    ExecutePostSteps(installLogger, new PostStepDetails
-                                    {
-                                        HistoryPath = installationHistoryRoot,
-                                        PostStepPackageFilename = updatePackageFilename
-                                    });
+                                    ExecutePostSteps(installLogger, postStepDetails);
+                                    installStatus = SUCCESS;
                                 }
                             }
                             catch (PostStepInstallerException ex)
                             {
+                                installStatus = FAIL;
+
                                 logMessages = ex.Entries;
                                 installationHistoryRoot = ex.HistoryPath;
                                 installLogger.Fatal("Package install failed", ex);
@@ -163,6 +173,7 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                             }
                             catch (Exception ex)
                             {
+                                installStatus = FAIL;
                                 Log.Error("Package install failed", ex, this);
                                 installLogger.Fatal("Package install failed", ex);
 
@@ -195,6 +206,12 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                                     installLogger.WriteMessages(Path.Combine(installationHistoryRoot, "Install.log"));
 
                                     SaveInstallationMessages(installationHistoryRoot, logMessages);
+                                }
+
+                                //Send the status if there is one
+                                if (installStatus != null)
+                                {
+                                    NotifiyPackageComplete(installStatus, postStepDetails);
                                 }
                             }
                         }
@@ -241,7 +258,7 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         /// </summary>
         /// <param name="updatePackageFilename"></param>
         /// <param name="historyPath"></param>
-        private void RunPostStepsAtStartup(string updatePackageFilename, string historyPath)
+        private void RunPostStepsAtStartup(string updatePackageFilename, string historyPath, PostStepDetails details)
         {
             string startupPostStepPackageFile = Path.Combine(_packageSource, STARTUP_POST_STEP_PACKAGE_FILENAME);
 
@@ -250,12 +267,6 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
             {
                 File.Delete(startupPostStepPackageFile);
             }
-
-            PostStepDetails details = new PostStepDetails
-            {
-                HistoryPath = historyPath,
-                PostStepPackageFilename = updatePackageFilename,
-            };
 
             XmlSerializer serializer = new XmlSerializer(typeof(PostStepDetails));
             using (TextWriter writer = new StreamWriter(startupPostStepPackageFile))
@@ -371,6 +382,33 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
             catch(Exception ex)
             {
                 Log.Fatal("Error saving installation messages", ex, typeof(InstallPackage));
+            }
+        }
+
+        /// <summary>
+        /// Writes the notification .json to the install folder
+        /// </summary>
+        /// <param name="status"></param>
+        /// <param name="postStepDetails"></param>
+        public static void NotifiyPackageComplete(string status, PostStepDetails postStepDetails)
+        {
+            try
+            {
+                using (StreamWriter sw = File.CreateText(postStepDetails.ResultFileName))
+                {
+                    CompletionNotification completionNotification = new CompletionNotification
+                    {
+                        Status = status,
+                        ServerName = Environment.MachineName,
+                        DeployHistoryPath = postStepDetails.HistoryPath
+                    };
+
+                    sw.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(completionNotification));
+                }
+            }
+            catch(Exception ex)
+            {
+                Log.Fatal("Error posting to notification url", ex, typeof(InstallPackage));
             }
         }
     }
