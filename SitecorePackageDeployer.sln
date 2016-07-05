@@ -1,16 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{CAA73BB0-EF22-4D79-A57E-DF67B3BA9C80}") = "TestUpdatePackage", "TestUpdatePackage\TestUpdatePackage.scproj", "{7C1509F1-8FF7-4B05-8261-06D61B319030}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestUpdatePackage.Web", "TestUpdatePackage.Web\TestUpdatePackage.Web.csproj", "{F3223389-7AA0-45DB-990B-975E81623926}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".tds", ".tds", "{9C0F240C-E8C3-4864-9C33-CD99F681507A}"
-	ProjectSection(SolutionItems) = preProject
-		TdsGlobal.config = TdsGlobal.config
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hhogdev.SitecorePackageDeployer", "SitecorePackageDeployer\Hhogdev.SitecorePackageDeployer.csproj", "{66BE500A-C01F-49E2-8455-78199F4F352F}"
 EndProject

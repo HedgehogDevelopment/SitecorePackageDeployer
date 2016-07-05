@@ -37,7 +37,7 @@
     <PackageAuthor>Charles Turano</PackageAuthor>
     <PackagePublisher>Hedgehog Development</PackagePublisher>
     <PackageReadme>Installs packages using a folder</PackageReadme>
-    <PackageVersion>1.2</PackageVersion>
+    <PackageVersion>1.5</PackageVersion>
     <SitecoreAssemblyPath>..\packages\SitecoreKernel.7.0.0.131127\lib</SitecoreAssemblyPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
