@@ -59,5 +59,8 @@
       <Name>Hhogdev.SitecorePackageDeployer.Web</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <ExcludedAssemblies Include="newtonsoft.json.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\HedgehogDevelopment\SitecoreProject\v9.0\HedgehogDevelopment.SitecoreProject.targets" Condition="Exists('$(MSBuildExtensionsPath)\HedgehogDevelopment\SitecoreProject\v9.0\HedgehogDevelopment.SitecoreProject.targets')" />
 </Project>
