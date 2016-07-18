@@ -30,13 +30,22 @@ namespace Hhogdev.SitecorePackageDeployer.Pipelines.Initialize
 
         public void Process(PipelineArgs args)
         {
+            //Check to see if we can run post steps
+            InstallPackage.InstallerState state = InstallPackage.GetInstallerState();
+            if (state == InstallPackage.InstallerState.InstallingPackage || state == InstallPackage.InstallerState.InstallingPostSteps)
+            {
+                Log.Warn(string.Format("Can't run post steps. Package installer state is {0}", state), this);
+
+                return;
+            }
+
             try
             {
                 RunPostInitializeStepsIfNeeded();
 
                 InstallAdditionalPackages();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Error("Failed to complete post initialize steps", ex, this);
             }
@@ -78,7 +87,7 @@ namespace Hhogdev.SitecorePackageDeployer.Pipelines.Initialize
 
                                     InstallPackage.NotifiyPackageComplete(InstallPackage.SUCCESS, details);
                                 }
-                                catch(Exception ex)
+                                catch (Exception ex)
                                 {
                                     Log.Fatal("An error occured when running post steps", ex, this);
 

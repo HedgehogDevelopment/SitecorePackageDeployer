@@ -13,6 +13,11 @@ namespace Hhogdev.SitecorePackageDeployer.Web.sitecore.admin
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (Request.QueryString["force"] == "1")
+            {
+                InstallPackage.ResetInstallState();
+            }
+
             ThreadPool.QueueUserWorkItem((ctx) =>
             {
                 InstallPackage installer = new InstallPackage();
