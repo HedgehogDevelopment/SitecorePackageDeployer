@@ -10,6 +10,7 @@ using Sitecore.Update.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using log4net.spi;
 using Hhogdev.SitecorePackageDeployer.Logging;
 using log4net.Repository.Hierarchy;
@@ -110,8 +111,9 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
             using (new SecurityDisabler())
             {
                 //Find pending packages. This loop may not complete if there were binary/config changes
-                foreach (string updatePackageFilename in Directory.GetFiles(_packageSource, "*.update", SearchOption.TopDirectoryOnly))
+                foreach (string updatePackageFilename in Directory.GetFiles(_packageSource, "*.update", SearchOption.TopDirectoryOnly).OrderBy(f => f))
                 {
+                    string updatePackageFilenameStripped = updatePackageFilename.Split('\\').Last();
                     if (ShutdownDetected)
                     {
                         Log.Info("Install packages aborting due to shutdown", this);
@@ -122,6 +124,7 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                     //Prevent shutdown
                     using (new ShutdownGuard())
                     {
+                        Log.Info(String.Format("Begin Installation: {0}", updatePackageFilenameStripped), this);
                         PackageInstallationInfo installationInfo = new PackageInstallationInfo
                         {
                             Action = UpgradeAction.Upgrade,
@@ -170,6 +173,7 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                                 ExecutePostSteps(installLogger, postStepDetails);
                                 installStatus = SUCCESS;
 
+                                Log.Info(String.Format("Installation Complete: {0}", updatePackageFilenameStripped), this);
                                 SetInstallerState(InstallerState.Ready);
                             }
                         }
@@ -186,7 +190,7 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                         catch (Exception ex)
                         {
                             installStatus = FAIL;
-                            Log.Error("Package install failed", ex, this);
+                            Log.Error(String.Format("Installation Failed: {0}", updatePackageFilenameStripped), ex, this);
                             installLogger.Fatal("Package install failed", ex);
 
                             ThreadPool.QueueUserWorkItem(new WaitCallback((ctx) =>

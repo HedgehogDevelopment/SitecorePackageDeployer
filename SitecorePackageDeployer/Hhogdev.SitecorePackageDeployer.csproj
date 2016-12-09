@@ -31,7 +31,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Lucene.Net, Version=3.0.3.0, Culture=neutral, PublicKeyToken=85089178b9ac3181, processorArchitecture=MSIL">
-      <HintPath>..\packages\SitecoreKernel.7.0.0.131127\lib\Lucene.Net.dll</HintPath>
+      <HintPath>..\packages\Lucene.Net.3.0.3\lib\NET40\Lucene.Net.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -39,24 +39,24 @@
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Sitecore.Kernel, Version=7.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SitecoreKernel.7.0.0.131127\lib\Sitecore.Kernel.dll</HintPath>
+    <Reference Include="Sitecore.Kernel, Version=8.0.5245.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Sitecore.Kernel.NoReferences.8.0.150812\lib\NET45\Sitecore.Kernel.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sitecore.Logging, Version=1.2.0.30715, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SitecoreKernel.7.0.0.131127\lib\Sitecore.Logging.dll</HintPath>
+      <HintPath>..\packages\Sitecore.Logging.NoReferences.8.0.150812\lib\NET45\Sitecore.Logging.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sitecore.Mvc, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SitecoreKernel.7.0.0.131127\lib\Sitecore.Mvc.dll</HintPath>
+      <HintPath>..\packages\Sitecore.Mvc.NoReferences.8.0.150812\lib\NET45\Sitecore.Mvc.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sitecore.Update, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SitecoreKernel.7.0.0.131127\lib\Sitecore.Update.dll</HintPath>
+      <HintPath>..\packages\Sitecore.Update.NoReferences.8.0.150812\lib\NET45\Sitecore.Update.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sitecore.Zip, Version=7.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SitecoreKernel.7.0.0.131127\lib\Sitecore.Zip.dll</HintPath>
+      <HintPath>..\packages\Sitecore.Zip.NoReferences.8.0.150812\lib\NET45\Sitecore.Zip.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
