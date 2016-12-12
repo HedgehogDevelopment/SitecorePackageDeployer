@@ -40,7 +40,7 @@ The package deployer can also run in an "On Demand" mode. This allows you to hav
 # Installing the Sitecore Package Deployer
 The update package installer can be downloaded as an update package from [here](https://github.com/HedgehogDevelopment/SitecorePackageDeployer/releases). This is an update package and can be installed using the Update Installation Wizard in Sitecore. Once it is installed, the deploy folder will automatically be created in the default location of **$(dataFolder)\SitecorePackageDeployer**. Simply drop your update packages in that location and they will be automatically installed.
 
-The Sitecore Package Deployer has been tested with the latest version of Sitecore 7.0, 7.1, 7.2, 7.5 and 8.0
+The Sitecore Package Deployer has been tested with Sitecore 7.0, 7.1, 7.2, 7.5, 8.0, 8.1, and 8.2 initial release.
 
 #Modifying the Sitecore Package Deployer
 If you wish to modify Sitecore Package Deployer, simple fork the repository. You may need to make a few simple modifications depending on your local environment. At Hedgehog, we use an internal NuGet server to distribute the Sitecore assemblies. If you follow a similar practice, you should restore the proper NuGet packages and everything should be pointing to the correct locations.
