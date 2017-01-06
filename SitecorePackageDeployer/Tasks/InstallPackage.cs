@@ -8,7 +8,9 @@ using Sitecore.Update.Installer.Installer.Utils;
 using Sitecore.Update.Installer.Utils;
 using Sitecore.Update.Utils;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using log4net.spi;
@@ -21,8 +23,10 @@ using Hhogdev.SitecorePackageDeployer.Metadata;
 using System.Xml.Serialization;
 using Sitecore.Web;
 using System.Net;
+using System.Reflection;
 using Sitecore.SecurityModel;
 using Sitecore.Data;
+using Sitecore.Syndication;
 
 namespace Hhogdev.SitecorePackageDeployer.Tasks
 {
@@ -40,6 +44,11 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         internal const string SUCCESS = "Success";
         internal const string FAIL = "Fail";
         internal const string INSTALLER_STATE_PROPERTY = "SPD_InstallerState";
+
+        static string sitecoreUpdatePath = Assembly.GetAssembly(typeof(PackageInstallationInfo)).Location;
+        static Assembly sitecoreUpdateAssembly = Assembly.LoadFile(sitecoreUpdatePath);
+        FileVersionInfo sitecoreUpdateVersionInfo = FileVersionInfo.GetVersionInfo(sitecoreUpdateAssembly.Location);
+        static Type updateHelperType = sitecoreUpdateAssembly.GetType("Sitecore.Update.UpdateHelper");
 
         //Points at the folder where new packages will be stored
         string _packageSource;
@@ -125,12 +134,7 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                     using (new ShutdownGuard())
                     {
                         Log.Info(String.Format("Begin Installation: {0}", updatePackageFilenameStripped), this);
-                        PackageInstallationInfo installationInfo = new PackageInstallationInfo
-                        {
-                            Action = UpgradeAction.Upgrade,
-                            Mode = InstallMode.Install,
-                            Path = updatePackageFilename
-                        };
+
 
                         string installationHistoryRoot = null;
                         List<ContingencyEntry> logMessages = new List<ContingencyEntry>();
@@ -146,7 +150,19 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                         try
                         {
                             //Run the installer
-                            logMessages = UpdateHelper.Install(installationInfo, installLogger, out installationHistoryRoot);
+                            if (sitecoreUpdateVersionInfo.ProductMajorPart == 1)
+                            {
+                                logMessages = UpdateHelper.Install(BuildPackageInfo(updatePackageFilename), installLogger, out installationHistoryRoot);
+                            }
+                            else
+                            {
+                                object[] installationParamaters = new object[] { BuildReflectedPackageInfo(updatePackageFilename), installLogger, null };
+                                logMessages = (List<ContingencyEntry>)updateHelperType.InvokeMember("Install",
+                                BindingFlags.InvokeMethod | BindingFlags.Static | BindingFlags.Public,
+                                null, null, installationParamaters, null);
+                                installationHistoryRoot = installationParamaters[2].ToString();
+                            }
+
                             postStepDetails.HistoryPath = installationHistoryRoot;
 
                             if (_updateConfigurationFiles)
@@ -197,11 +213,11 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                             {
                                 try
                                 {
-                                    //The update package may be locked because the file object hasn't been disposed. Wait for it.
-                                    Thread.Sleep(100);
+                      //The update package may be locked because the file object hasn't been disposed. Wait for it.
+                      Thread.Sleep(100);
 
-                                    //I really hate this, but I couldn't find another reliable way to ensure the locked file is closed before I move it.
-                                    GC.Collect(2);
+                      //I really hate this, but I couldn't find another reliable way to ensure the locked file is closed before I move it.
+                      GC.Collect(2);
                                     GC.WaitForPendingFinalizers();
 
                                     File.Move(updatePackageFilename, updatePackageFilename + ".error_" + DateTime.Now.ToString("yyyyMMdd.hhmmss"));
@@ -480,6 +496,117 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         public static void ResetInstallState()
         {
             SetInstallerState(InstallerState.Ready);
+        }
+
+        private PackageInstallationInfo BuildPackageInfo(string updatePackageFilename)
+        {
+            PackageInstallationInfo installationInfo = new PackageInstallationInfo
+            {
+                Action = UpgradeAction.Upgrade,
+                Mode = InstallMode.Install,
+                Path = updatePackageFilename,
+            };
+            return installationInfo;
+        }
+
+        private object BuildReflectedPackageInfo(string updatePackageFilename)
+        {
+            //Get PackageInstallationInfo type and create instance for reflection
+            Type packageInstallationInfoType = sitecoreUpdateAssembly.GetType("Sitecore.Update.PackageInstallationInfo");
+            object packageInstallationInfoInstance = Activator.CreateInstance(packageInstallationInfoType);
+            //Get and set properties
+            PropertyInfo actionPropertyInfo = packageInstallationInfoType.GetProperty("Action");
+            PropertyInfo modePropertyInfo = packageInstallationInfoType.GetProperty("Mode");
+            PropertyInfo pathPropertyInfo = packageInstallationInfoType.GetProperty("Path");
+            PropertyInfo processingModePropertyInfo = packageInstallationInfoType.GetProperty("ProcessingMode");
+            actionPropertyInfo.SetValue(packageInstallationInfoInstance, GetUpgradeActionValue("Upgrade"), null);
+            modePropertyInfo.SetValue(packageInstallationInfoInstance, GetInstallModeValue("Install"), null);
+            pathPropertyInfo.SetValue(packageInstallationInfoInstance, updatePackageFilename, null);
+            processingModePropertyInfo.SetValue(packageInstallationInfoInstance, GetProcessingModeValue("All"), null);
+            return packageInstallationInfoInstance;
+        }
+
+        /// <summary>
+        ///   Gets upgrade action value.
+        /// </summary>
+        ///
+        /// <remarks>
+        ///   Created  on 12/27/2016.
+        /// </remarks>
+        ///
+        /// <param name="upgradeAction"> The upgrade action accepting any of the following values 
+        ///  {
+        ///   "Preview",
+        ///   "Upgrade"
+        ///  }
+        /// from Sitecore.Update v2 dll's Sitecore.Update.Installer.Utils.UpgradeAction enum.
+        /// </param>
+        /// 
+        ///
+        /// <returns>
+        ///   The upgrade action value.
+        /// </returns>
+
+        private object GetUpgradeActionValue(string upgradeAction)
+        {
+            Type upgradeActionType = sitecoreUpdateAssembly.GetType("Sitecore.Update.Installer.Utils.UpgradeAction");
+            return Enum.Parse(upgradeActionType, upgradeAction);
+        }
+
+        /// <summary>
+        ///   Gets install mode value.
+        /// </summary>
+        ///
+        /// <remarks>
+        ///   Created  on 12/27/2016.
+        /// </remarks>
+        ///
+        /// <param name="installMode">  The install mode accepting any of the following values
+        ///   {
+        ///   "Install",
+        ///		"Update"
+        ///   }
+        /// from Sitecore.Update v2 dll's Sitecore.Update.Utils.InstallMode enum
+        /// </param>
+        ///
+        /// <returns>
+        ///   The install mode value.
+        /// </returns>
+
+        private object GetInstallModeValue(string installMode)
+        {
+            Type installModeType = sitecoreUpdateAssembly.GetType("Sitecore.Update.Utils.InstallMode");
+            return Enum.Parse(installModeType, installMode);
+        }
+
+        /// <summary>
+        ///   Gets processing mode value.
+        /// </summary>
+        ///
+        /// <remarks>
+        ///   Created  on 12/27/2016.
+        /// </remarks>
+        ///
+        /// <param name="processingMode"> The processing mode accepting any of the following values 
+        ///  {
+        ///  "None",
+        ///  "Files",
+        ///  "Items",
+        ///  "PostStep",
+        ///  "All"
+        /// }
+        /// from Sitecore.Update v2 dll's Sitecore.Update.Utils.ProcessingMode enum.
+        /// </param>
+        /// 
+        ///
+        /// <returns>
+        ///   The processing mode value.
+        /// </returns>
+
+        private object GetProcessingModeValue(string processingMode)
+        {
+            Type processingModeType = sitecoreUpdateAssembly.GetType("Sitecore.Update.Utils.ProcessingMode");
+            return Enum.Parse(processingModeType, processingMode);
         }
     }
 }
