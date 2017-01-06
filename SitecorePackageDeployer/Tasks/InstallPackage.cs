@@ -213,11 +213,11 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                             {
                                 try
                                 {
-                      //The update package may be locked because the file object hasn't been disposed. Wait for it.
-                      Thread.Sleep(100);
+                                    //The update package may be locked because the file object hasn't been disposed. Wait for it.
+                                    Thread.Sleep(100);
 
-                      //I really hate this, but I couldn't find another reliable way to ensure the locked file is closed before I move it.
-                      GC.Collect(2);
+                                    //I really hate this, but I couldn't find another reliable way to ensure the locked file is closed before I move it.
+                                    GC.Collect(2);
                                     GC.WaitForPendingFinalizers();
 
                                     File.Move(updatePackageFilename, updatePackageFilename + ".error_" + DateTime.Now.ToString("yyyyMMdd.hhmmss"));
