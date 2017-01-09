@@ -127,6 +127,11 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                     {
                         Log.Info("Install packages aborting due to shutdown", this);
 
+                        if (GetInstallerState() != InstallerState.WaitingForPostSteps)
+                        {
+                            SetInstallerState(InstallerState.Ready);
+                        }
+
                         break;
                     }
 
@@ -134,7 +139,6 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                     using (new ShutdownGuard())
                     {
                         Log.Info(String.Format("Begin Installation: {0}", updatePackageFilenameStripped), this);
-
 
                         string installationHistoryRoot = null;
                         List<ContingencyEntry> logMessages = new List<ContingencyEntry>();
