@@ -8,7 +8,9 @@ using Sitecore.Diagnostics;
 using Sitecore.Pipelines;
 using Sitecore.SecurityModel;
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Xml.Serialization;
 
@@ -30,6 +32,8 @@ namespace Hhogdev.SitecorePackageDeployer.Pipelines.Initialize
 
         public void Process(PipelineArgs args)
         {
+            Log.Info("Sitecore package deployer starting. Version: " + FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location). FileVersion, this);
+
             //Check to see if we can run post steps
             InstallPackage.InstallerState state = InstallPackage.GetInstallerState();
             if (state == InstallPackage.InstallerState.InstallingPackage || state == InstallPackage.InstallerState.InstallingPostSteps)

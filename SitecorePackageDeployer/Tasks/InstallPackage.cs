@@ -43,7 +43,7 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         internal const string STARTUP_POST_STEP_PACKAGE_FILENAME = "StartPostStepPackage.xml";
         internal const string SUCCESS = "Success";
         internal const string FAIL = "Fail";
-        internal const string INSTALLER_STATE_PROPERTY = "SPD_InstallerState";
+        internal const string INSTALLER_STATE_PROPERTY = "SPD_InstallerState_";
 
         static string sitecoreUpdatePath = Assembly.GetAssembly(typeof(PackageInstallationInfo)).Location;
         static Assembly sitecoreUpdateAssembly = Assembly.LoadFile(sitecoreUpdatePath);
@@ -56,9 +56,6 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         string _restartUrl;
         //Determines if the config files should be updated
         bool _updateConfigurationFiles;
-
-        //Indicates that a package is being installed
-
 
         public static bool ShutdownDetected { get; set; }
 
@@ -114,30 +111,38 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                 return;
             }
 
-            //Block further package installs
-            SetInstallerState(InstallerState.InstallingPackage);
-
-            using (new SecurityDisabler())
+            //Prevent shutdown
+            using (new ShutdownGuard())
             {
-                //Find pending packages. This loop may not complete if there were binary/config changes
-                foreach (string updatePackageFilename in Directory.GetFiles(_packageSource, "*.update", SearchOption.TopDirectoryOnly).OrderBy(f => f))
+                //If Sitecore is shutting down, don't start the installer
+                if (ShutdownDetected)
                 {
-                    string updatePackageFilenameStripped = updatePackageFilename.Split('\\').Last();
-                    if (ShutdownDetected)
-                    {
-                        Log.Info("Install packages aborting due to shutdown", this);
+                    Log.Info("Skipping Install because shutdown is pending", this);
 
-                        if (GetInstallerState() != InstallerState.WaitingForPostSteps)
+                    return;
+                }
+
+                //Block further package installs
+                SetInstallerState(InstallerState.InstallingPackage);
+
+                using (new SecurityDisabler())
+                {
+                    //Find pending packages. This loop may not complete if there were binary/config changes
+                    foreach (string updatePackageFilename in Directory.GetFiles(_packageSource, "*.update", SearchOption.TopDirectoryOnly).OrderBy(f => f))
+                    {
+                        string updatePackageFilenameStripped = updatePackageFilename.Split('\\').Last();
+                        if (ShutdownDetected)
                         {
-                            SetInstallerState(InstallerState.Ready);
+                            Log.Info("Install packages aborting due to shutdown", this);
+
+                            if (GetInstallerState() != InstallerState.WaitingForPostSteps)
+                            {
+                                SetInstallerState(InstallerState.Ready);
+                            }
+
+                            break;
                         }
 
-                        break;
-                    }
-
-                    //Prevent shutdown
-                    using (new ShutdownGuard())
-                    {
                         Log.Info(String.Format("Begin Installation: {0}", updatePackageFilenameStripped), this);
 
                         string installationHistoryRoot = null;
@@ -251,12 +256,12 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                             }
                         }
                     }
-                }
 
-                if (!ShutdownDetected)
-                {
-                    //Allow additional installs
-                    SetInstallerState(InstallerState.Ready);
+                    if (!ShutdownDetected)
+                    {
+                        //Allow additional installs
+                        SetInstallerState(InstallerState.Ready);
+                    }
                 }
             }
         }
@@ -266,7 +271,7 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
             Log.Info(string.Format("Setting installer state to {0}", installState), typeof(InstallPackage));
 
             Database coreDb = Database.GetDatabase("core");
-            coreDb.Properties.SetIntValue(INSTALLER_STATE_PROPERTY, (int)installState);
+            coreDb.Properties.SetIntValue(INSTALLER_STATE_PROPERTY + Environment.MachineName, (int)installState);
         }
 
         /// <summary>
@@ -276,7 +281,7 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         internal static InstallerState GetInstallerState()
         {
             Database coreDb = Database.GetDatabase("core");
-            return (InstallerState)coreDb.Properties.GetIntValue(INSTALLER_STATE_PROPERTY, (int)InstallerState.Ready);
+            return (InstallerState)coreDb.Properties.GetIntValue(INSTALLER_STATE_PROPERTY + Environment.MachineName, (int)InstallerState.Ready);
         }
 
         /// <summary>
