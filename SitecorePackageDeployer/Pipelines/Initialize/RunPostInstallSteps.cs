@@ -87,7 +87,7 @@ namespace Hhogdev.SitecorePackageDeployer.Pipelines.Initialize
 
                                 try
                                 {
-                                    InstallPackage.ExecutePostSteps(installLogger, details);
+                                    InstallPackage.ExecutePostSteps(installLogger, details, true);
 
                                     InstallPackage.NotifiyPackageComplete(InstallPackage.SUCCESS, details);
                                 }

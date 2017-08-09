@@ -1,0 +1,53 @@
+<project>
+  <Metadata>
+    <metadata>
+      <PackageName>SitecorePackageDeployer</PackageName>
+      <Author>Charles Turano</Author>
+      <Version>1.8</Version>
+      <Revision />
+      <License />
+      <Comment />
+      <Attributes />
+      <Readme />
+      <Publisher>Hedgehog Development</Publisher>
+      <PostStep />
+      <PackageID />
+    </metadata>
+  </Metadata>
+  <SaveProject>True</SaveProject>
+  <Sources>
+    <xfiles>
+      <Entries>
+        <x-item>/App_Config/Include/Hhogdev.SitecorePackageDeployer.config</x-item>
+        <x-item>/bin/Hhogdev.SitecorePackageDeployer.dll</x-item>
+        <x-item>/bin/Hhogdev.SitecorePackageDeployer.pdb</x-item>
+        <x-item>/bin/Hhogdev.SitecorePackageDeployer.Web.dll</x-item>
+        <x-item>/bin/Hhogdev.SitecorePackageDeployer.Web.pdb</x-item>
+        <x-item>/sitecore/admin/StartSitecorePackageDeployer.aspx</x-item>
+      </Entries>
+      <Converter>
+        <FileToEntryConverter>
+          <Root>/</Root>
+          <Transforms />
+        </FileToEntryConverter>
+      </Converter>
+      <Include />
+      <Exclude />
+      <Name>Package Deployer Files</Name>
+    </xfiles>
+  </Sources>
+  <Converter>
+    <TrivialConverter>
+      <Transforms />
+    </TrivialConverter>
+  </Converter>
+  <Include />
+  <Exclude />
+  <Name />
+</project>
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,300italic,400italic,600italic,700italic,300,600,700,800" rel="stylesheet" />
+
+<link href="/sitecore/shell/themes/standard/default/Default.css" rel="stylesheet" />
+
+<link href="/sitecore/shell/controls/Lib/Flexie/flex.css" rel="stylesheet" />
+

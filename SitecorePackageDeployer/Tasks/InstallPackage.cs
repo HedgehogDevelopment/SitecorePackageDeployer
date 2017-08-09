@@ -195,11 +195,11 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                             }
                             else
                             {
-                                ExecutePostSteps(installLogger, postStepDetails);
+                                ExecutePostSteps(installLogger, postStepDetails, false);
                                 installStatus = SUCCESS;
 
                                 Log.Info(String.Format("Installation Complete: {0}", updatePackageFilenameStripped), this);
-                                SetInstallerState(InstallerState.Ready);
+                                SetInstallerState(InstallerState.InstallingPackage);
                             }
                         }
                         catch (PostStepInstallerException ex)
@@ -363,7 +363,7 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         /// Executes the post install steps
         /// </summary>
         /// <param name="postStepDetails"></param>
-        internal static void ExecutePostSteps(InstallLogger installLogger, PostStepDetails postStepDetails)
+        internal static void ExecutePostSteps(InstallLogger installLogger, PostStepDetails postStepDetails, bool setReadyStateWhenDone)
         {
             try
             {
@@ -391,11 +391,17 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
 
                 installLogger.Fatal("Post step execution failed", ex);
 
+                //If the post step fails, we need to make the installer ready for the next package so it doesn't get stuck waiting for this one to finish.
+                SetInstallerState(InstallerState.Ready);
+
                 throw;
             }
             finally
             {
-                SetInstallerState(InstallerState.Ready);
+                if (setReadyStateWhenDone)
+                {
+                    SetInstallerState(InstallerState.Ready);
+                }
             }
         }
 
