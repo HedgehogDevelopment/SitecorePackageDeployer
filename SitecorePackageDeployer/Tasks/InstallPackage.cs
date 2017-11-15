@@ -75,6 +75,12 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         {
             string packageSource = Settings.GetSetting("SitecorePackageDeployer.PackageSource");
 
+            //See if the package source is a web path instead of a file system path.
+            if (packageSource.StartsWith("/"))
+            {
+                packageSource = MainUtil.MapPath(packageSource);
+            }
+
             if (!Directory.Exists(packageSource))
             {
                 Directory.CreateDirectory(packageSource);
