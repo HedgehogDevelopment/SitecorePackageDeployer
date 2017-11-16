@@ -44,6 +44,16 @@
     <DebugSymbols>false</DebugSymbols>
     <OutputPath>.\bin\Release\</OutputPath>
     <RecursiveDeployAction>Ignore</RecursiveDeployAction>
+    <PackageName>Hhogdev.SitecorePackageDeployer</PackageName>
+    <GeneratePackage>True</GeneratePackage>
+    <SeperateFilesAndItems>False</SeperateFilesAndItems>
+    <PackageExcludeCode>False</PackageExcludeCode>
+    <AddDateTimeToPackageName>False</AddDateTimeToPackageName>
+    <PackageAuthor>Charles Turano</PackageAuthor>
+    <PackagePublisher>Hedgehog Development</PackagePublisher>
+    <PackageReadme>Installs packages using a folder</PackageReadme>
+    <PackageVersion>1.10</PackageVersion>
+    <SitecoreAssemblyPath>..\packages\SitecoreKernel.7.0.0.131127\lib</SitecoreAssemblyPath>
   </PropertyGroup>
   <ItemGroup>
     <AssemblyAttributes Include="AssemblyFileVersion">
