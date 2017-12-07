@@ -86,6 +86,7 @@
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Properties\PublishProfiles\ReleaseProfile.pubxml" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
