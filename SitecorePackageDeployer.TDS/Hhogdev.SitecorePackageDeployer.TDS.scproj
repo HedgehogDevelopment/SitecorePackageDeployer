@@ -37,7 +37,7 @@
     <PackageAuthor>Charles Turano</PackageAuthor>
     <PackagePublisher>Hedgehog Development</PackagePublisher>
     <PackageReadme>Installs packages using a folder</PackageReadme>
-    <PackageVersion>1.8</PackageVersion>
+    <PackageVersion>1.9</PackageVersion>
     <SitecoreAssemblyPath>
     </SitecoreAssemblyPath>
   </PropertyGroup>
