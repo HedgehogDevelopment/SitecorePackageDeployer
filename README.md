@@ -11,7 +11,7 @@ Blog Post about this feature: [https://www.teamdevelopmentforsitecore.com/Blog/s
 # Description
 There are three components that the Sitecore Package Deployer module uses to install update Packages. These components work together to deploy the Sitecore update package. 
 
-The first component is a scheduled task run the by the Sitecore task agent. This task runs one per minute and looks for packages in a folder specified by the configuration setting **SitecorePackageDeployer.PackageSource**. When an update package is found, it is installed using the Sitecore update API.
+The first component is a scheduled task run the by the Sitecore task agent. This task runs once per minute and looks for packages in a folder specified by the configuration setting **SitecorePackageDeployer.PackageSource**. When an update package is found, it is installed using the Sitecore update API.
 
 The second component is a pipeline step in the shutdown pipeline. This step sets a flag in the package installer task to indicate Sitecore is shutting down. The installer needs to know this so it doesn't attempt to run the update package post install steps until Sitecore restarts. If Sitecore is shutting down, the installer task creates a file in the **SitecorePackageDeployer.PackageSource** folder indicating the update package needs to have it's post steps executed.
 

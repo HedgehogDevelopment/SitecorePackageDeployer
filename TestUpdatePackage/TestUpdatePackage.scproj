@@ -7,9 +7,6 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>7c1509f1-8ff7-4b05-8261-06d61b319030</ProjectGuid>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <SourceWebPhysicalPath>..\TestUpdatePackage.Web</SourceWebPhysicalPath>
-    <SourceWebProject>{f3223389-7aa0-45db-990b-975e81623926}|TestUpdatePackage.Web\TestUpdatePackage.Web.csproj</SourceWebProject>
-    <SourceWebVirtualPath>/TestUpdatePackage.Web.csproj</SourceWebVirtualPath>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <EnableUpdateable>true</EnableUpdateable>
     <UseMerge>true</UseMerge>
@@ -24,6 +21,9 @@
     <ManageRoles>False</ManageRoles>
     <SitecoreDatabase>master</SitecoreDatabase>
     <AssemblyStatus>Exclude</AssemblyStatus>
+    <SourceWebVirtualPath>/TestUpdatePackage.Web.csproj</SourceWebVirtualPath>
+    <SourceWebProject>{f3223389-7aa0-45db-990b-975e81623926}|TestUpdatePackage.Web\TestUpdatePackage.Web.csproj</SourceWebProject>
+    <SourceWebPhysicalPath>..\TestUpdatePackage.Web</SourceWebPhysicalPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -39,7 +39,8 @@
     <PackagePublisher>Hedgehog Development</PackagePublisher>
     <PackageReadme>This package tests the package deployer</PackageReadme>
     <PackageVersion>1.0</PackageVersion>
-    <SitecoreAssemblyPath>..\packages\SitecoreKernel.7.0.0.131127\lib</SitecoreAssemblyPath>
+    <SitecoreAssemblyPath>
+    </SitecoreAssemblyPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugSymbols>false</DebugSymbols>
@@ -53,12 +54,6 @@
     <AssemblyAttributes Include="AssemblyVersion">
       <Value>$(AssemblyVersion)</Value>
     </AssemblyAttributes>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\TestUpdatePackage.Web\TestUpdatePackage.Web.csproj">
-      <Project>{f3223389-7aa0-45db-990b-975e81623926}</Project>
-      <Name>TestUpdatePackage.Web</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <SitecoreItem Include="sitecore\templates.item">
@@ -104,6 +99,15 @@
     <PostDeployAction Include="HedgehogDevelopment.SitecoreProject.PackageInstallPostProcessor.BuiltIn.UpdateLinkDatabaseForDeployedItems, HedgehogDevelopment.SitecoreProject.PackageInstallPostProcessor">
       <Order>2</Order>
     </PostDeployAction>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TestUpdatePackage.Web\TestUpdatePackage.Web.csproj">
+      <Project>{f3223389-7aa0-45db-990b-975e81623926}</Project>
+      <Name>TestUpdatePackage.Web</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ExcludedAssemblies Include="Sitecore.%2a.DLL" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\HedgehogDevelopment\SitecoreProject\v9.0\HedgehogDevelopment.SitecoreProject.targets" Condition="Exists('$(MSBuildExtensionsPath)\HedgehogDevelopment\SitecoreProject\v9.0\HedgehogDevelopment.SitecoreProject.targets')" />
 </Project>

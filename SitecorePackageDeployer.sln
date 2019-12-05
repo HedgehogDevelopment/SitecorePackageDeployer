@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{CAA73BB0-EF22-4D79-A57E-DF67B3BA9C80}") = "TestUpdatePackage", "TestUpdatePackage\TestUpdatePackage.scproj", "{7C1509F1-8FF7-4B05-8261-06D61B319030}"
 EndProject
@@ -16,6 +16,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{41090F22-ABDF-4BAA-95A5-524520A4C1D1}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
+		SitecorePackageDeployer.packagedef.xml = SitecorePackageDeployer.packagedef.xml
 	EndProjectSection
 EndProject
 Global

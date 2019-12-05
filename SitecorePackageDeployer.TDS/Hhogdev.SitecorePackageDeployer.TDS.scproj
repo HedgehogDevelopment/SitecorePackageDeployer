@@ -7,9 +7,6 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>d16e1b30-7fa4-456b-8dfe-45dfa4ec7900</ProjectGuid>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <SourceWebPhysicalPath>..\SitecorePackageDeployer.Web</SourceWebPhysicalPath>
-    <SourceWebProject>{ae330004-b9ae-465c-aec2-a5a22cde8f97}|SitecorePackageDeployer.Web\Hhogdev.SitecorePackageDeployer.Web.csproj</SourceWebProject>
-    <SourceWebVirtualPath>/Hhogdev.SitecorePackageDeployer.Web.csproj</SourceWebVirtualPath>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <EnableUpdateable>true</EnableUpdateable>
     <UseMerge>true</UseMerge>
@@ -23,6 +20,9 @@
     <ManageRoles>False</ManageRoles>
     <SitecoreDatabase>master</SitecoreDatabase>
     <AssemblyStatus>Exclude</AssemblyStatus>
+    <SourceWebVirtualPath>/Hhogdev.SitecorePackageDeployer.Web.csproj</SourceWebVirtualPath>
+    <SourceWebProject>{ae330004-b9ae-465c-aec2-a5a22cde8f97}|SitecorePackageDeployer.Web\Hhogdev.SitecorePackageDeployer.Web.csproj</SourceWebProject>
+    <SourceWebPhysicalPath>..\SitecorePackageDeployer.Web</SourceWebPhysicalPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -38,7 +38,8 @@
     <PackagePublisher>Hedgehog Development</PackagePublisher>
     <PackageReadme>Installs packages using a folder</PackageReadme>
     <PackageVersion>1.9</PackageVersion>
-    <SitecoreAssemblyPath>..\packages\SitecoreKernel.7.0.0.131127\lib</SitecoreAssemblyPath>
+    <SitecoreAssemblyPath>
+    </SitecoreAssemblyPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugSymbols>false</DebugSymbols>
@@ -53,7 +54,8 @@
     <PackagePublisher>Hedgehog Development</PackagePublisher>
     <PackageReadme>Installs packages using a folder</PackageReadme>
     <PackageVersion>1.10</PackageVersion>
-    <SitecoreAssemblyPath>..\packages\SitecoreKernel.7.0.0.131127\lib</SitecoreAssemblyPath>
+    <SitecoreAssemblyPath>
+    </SitecoreAssemblyPath>
   </PropertyGroup>
   <ItemGroup>
     <AssemblyAttributes Include="AssemblyFileVersion">
@@ -71,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <ExcludedAssemblies Include="newtonsoft.json.dll" />
+    <ExcludedAssemblies Include="Sitecore.%2a.DLL" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\HedgehogDevelopment\SitecoreProject\v9.0\HedgehogDevelopment.SitecoreProject.targets" Condition="Exists('$(MSBuildExtensionsPath)\HedgehogDevelopment\SitecoreProject\v9.0\HedgehogDevelopment.SitecoreProject.targets')" />
 </Project>
