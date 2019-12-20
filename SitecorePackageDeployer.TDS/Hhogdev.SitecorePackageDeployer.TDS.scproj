@@ -38,7 +38,8 @@
     <PackagePublisher>Hedgehog Development</PackagePublisher>
     <PackageReadme>Installs packages using a folder</PackageReadme>
     <PackageVersion>1.9</PackageVersion>
-    <SitecoreAssemblyPath>..\packages\SitecoreKernel.7.0.0.131127\lib</SitecoreAssemblyPath>
+    <SitecoreAssemblyPath>
+    </SitecoreAssemblyPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugSymbols>false</DebugSymbols>
