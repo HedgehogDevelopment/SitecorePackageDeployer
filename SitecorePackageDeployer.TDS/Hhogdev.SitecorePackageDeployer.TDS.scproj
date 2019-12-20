@@ -56,7 +56,7 @@
     <PackageAuthor>Charles Turano</PackageAuthor>
     <PackagePublisher>Hedgehog Development</PackagePublisher>
     <PackageReadme>Installs packages using a folder</PackageReadme>
-    <PackageVersion>1.10</PackageVersion>
+    <PackageVersion>1.11</PackageVersion>
     <SitecoreAssemblyPath>
     </SitecoreAssemblyPath>
   </PropertyGroup>
