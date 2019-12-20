@@ -277,7 +277,29 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
             Log.Info(string.Format("Setting installer state to {0}", installState), typeof(InstallPackage));
 
             Database coreDb = Database.GetDatabase("core");
-            coreDb.Properties.SetIntValue(INSTALLER_STATE_PROPERTY + Environment.MachineName, (int)installState);
+            // Use reflection to get the int value because the properties base class changed in 9.3
+            if (coreDb.GetType().Assembly.GetName().Version.Major >= 14)
+            {
+                //coreDb.PropertyStore.SetIntValue(INSTALLER_STATE_PROPERTY + Environment.MachineName, (int)installState);
+
+                PropertyInfo propertyStorePropertyInfo = coreDb.GetType().GetProperty("PropertyStore");
+                MethodInfo propertyStoreGetMethod = propertyStorePropertyInfo.GetGetMethod();
+                object propertyStore = propertyStoreGetMethod.Invoke(coreDb, null);
+
+                MethodInfo setIntValueMethodInfo = propertyStore.GetType().GetMethod("SetIntValue");
+                setIntValueMethodInfo.Invoke(propertyStore, new object[] { INSTALLER_STATE_PROPERTY + Environment.MachineName, installState });
+            }
+            else
+            {
+                //coreDb.Properties.SetIntValue(INSTALLER_STATE_PROPERTY + Environment.MachineName, (int)installState);
+
+                PropertyInfo propertiesPropertyInfo = coreDb.GetType().GetProperty("Properties");
+                MethodInfo propertiesGetMethod = propertiesPropertyInfo.GetGetMethod();
+                object properties = propertiesGetMethod.Invoke(coreDb, null);
+
+                MethodInfo setIntValueMethodInfo = properties.GetType().GetMethod("SetIntValue");
+                setIntValueMethodInfo.Invoke(properties, new object[] { INSTALLER_STATE_PROPERTY + Environment.MachineName, installState });
+            }
         }
 
         /// <summary>
@@ -287,7 +309,30 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         internal static InstallerState GetInstallerState()
         {
             Database coreDb = Database.GetDatabase("core");
-            return (InstallerState)coreDb.Properties.GetIntValue(INSTALLER_STATE_PROPERTY + Environment.MachineName, (int)InstallerState.Ready);
+
+            // Use reflection to get the int value because the properties base class changed in 9.3
+            if (coreDb.GetType().Assembly.GetName().Version.Major >= 14)
+            {
+                //return (InstallerState)coreDb.PropertyStore.GetIntValue(INSTALLER_STATE_PROPERTY + Environment.MachineName, (int)InstallerState.Ready);
+
+                PropertyInfo propertyStorePropertyInfo = coreDb.GetType().GetProperty("PropertyStore");
+                MethodInfo propertyStoreGetMethod = propertyStorePropertyInfo.GetGetMethod();
+                object propertyStore = propertyStoreGetMethod.Invoke(coreDb, null);
+
+                MethodInfo getIntValueMethodInfo = propertyStore.GetType().GetMethod("GetIntValue");
+                return (InstallerState)getIntValueMethodInfo.Invoke(propertyStore, new object[] { INSTALLER_STATE_PROPERTY + Environment.MachineName, (int)InstallerState.Ready });
+            }
+            else
+            {
+                //return (InstallerState)coreDb.Properties.GetIntValue(INSTALLER_STATE_PROPERTY + Environment.MachineName, (int)InstallerState.Ready);
+
+                PropertyInfo propertiesPropertyInfo = coreDb.GetType().GetProperty("Properties");
+                MethodInfo propertiesGetMethod = propertiesPropertyInfo.GetGetMethod();
+                object properties = propertiesGetMethod.Invoke(coreDb, null);
+
+                MethodInfo getIntValueMethodInfo = properties.GetType().GetMethod("GetIntValue");
+                return (InstallerState)getIntValueMethodInfo.Invoke(properties, new object[] { INSTALLER_STATE_PROPERTY + Environment.MachineName, (int)InstallerState.Ready });
+            }
         }
 
         /// <summary>
