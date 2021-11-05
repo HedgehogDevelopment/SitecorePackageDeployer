@@ -19,6 +19,7 @@ namespace Hhogdev.SitecorePackageDeployer.Pipelines.Initialize
     public class RunPostInstallSteps
     {
         string _packageSource;
+        string _restartFile;
 
         public RunPostInstallSteps()
         {
@@ -28,11 +29,19 @@ namespace Hhogdev.SitecorePackageDeployer.Pipelines.Initialize
         private void LoadSettings()
         {
             _packageSource = InstallPackage.GetPackageSource();
+            _restartFile = InstallPackage.GetRestartFile();
         }
 
         public void Process(PipelineArgs args)
         {
             Log.Info("Sitecore package deployer starting. Version: " + FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location). FileVersion, this);
+
+            //Check to see if we need to force the start of an install since the state is incorrect
+            if (File.Exists(_restartFile))
+            {
+                File.Delete(_restartFile);
+                InstallPackage.ResetInstallState();
+            }
 
             //Check to see if we can run post steps
             InstallPackage.InstallerState state = InstallPackage.GetInstallerState();
