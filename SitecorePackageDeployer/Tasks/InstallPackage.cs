@@ -54,6 +54,8 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         string _packageSource;
         //Url to make a request to for restarting the web server
         string _restartUrl;
+        //File for restarting the web server
+        string _restartFile;
         //Determines if the config files should be updated
         bool _updateConfigurationFiles;
 
@@ -68,7 +70,9 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         {
             _packageSource = GetPackageSource();
             _restartUrl = Settings.GetSetting("SitecorePackageDeployer.RestartUrl");
+            _restartFile = GetRestartFile();
             _updateConfigurationFiles = Settings.GetBoolSetting("SitecorePackageDeployer.UpdateConfigurationFiles", true);
+
         }
 
         internal static string GetPackageSource()
@@ -87,6 +91,11 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
             }
 
             return packageSource;
+        }
+
+        internal static string GetRestartFile()
+        {
+            return Settings.GetSetting("SitecorePackageDeployer.RestartFile");
         }
 
         public void Run()
@@ -108,6 +117,13 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
             }
 
             InstallLogger installLogger = new InstallLogger(new RootLogger(Level.ALL));
+            
+            //Check to see if we need to force the start of an install since the state is incorrect
+            if (File.Exists(_restartFile))
+            {
+                File.Delete(_restartFile);
+                ResetInstallState();
+            }
 
             //Return if another installation is happening
             if (GetInstallerState() != InstallerState.Ready)
