@@ -1,76 +1,66 @@
-﻿using log4net;
-using log4net.spi;
-using Sitecore.Diagnostics;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using log4net;
+using log4net.spi;
+using Sitecore.Diagnostics;
 
 namespace Hhogdev.SitecorePackageDeployer.Logging
 {
     /// <summary>
-    /// Implements ILog to capture log messages during install
+    ///     Implements ILog to capture log messages during install
     /// </summary>
     internal class InstallLogger : ILog
     {
-        ILogger _logger;
-        List<string> _messages = new List<string>();
+        private readonly List<string> _messages = new List<string>();
 
         public InstallLogger(ILogger logger)
         {
-            _logger = logger;
+            Logger = logger;
+        }
+
+        /// <summary>
+        ///     Adds a message to the list of messages strings
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="ex"></param>
+        /// <param name="dEBUG"></param>
+        private void WriteMessage(object message, Exception ex)
+        {
+            var messageBuilder = new StringBuilder(message.ToString());
+
+            if (ex != null)
+            {
+                messageBuilder.Append("\n\t");
+                messageBuilder.Append(ex);
+            }
+
+            _messages.Add(messageBuilder.ToString());
+        }
+
+        /// <summary>
+        ///     Writes messages to a log file
+        /// </summary>
+        /// <param name="logFile"></param>
+        public void WriteMessages(string logFile)
+        {
+            File.AppendAllLines(logFile, _messages);
         }
 
         #region ILog implementation
-        public bool IsDebugEnabled
-        {
-            get
-            {
-                return true;
-            }
-        }
 
-        public bool IsErrorEnabled
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public bool IsDebugEnabled => true;
 
-        public bool IsFatalEnabled
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public bool IsErrorEnabled => true;
 
-        public bool IsInfoEnabled
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public bool IsFatalEnabled => true;
 
-        public bool IsWarnEnabled
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public bool IsInfoEnabled => true;
 
-        public ILogger Logger
-        {
-            get
-            {
-                return _logger;
-            }
-        }
+        public bool IsWarnEnabled => true;
+
+        public ILogger Logger { get; }
 
         public void Debug(object message)
         {
@@ -141,34 +131,7 @@ namespace Hhogdev.SitecorePackageDeployer.Logging
 
             WriteMessage(message, ex);
         }
+
         #endregion
-
-        /// <summary>
-        /// Adds a message to the list of messages strings
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="ex"></param>
-        /// <param name="dEBUG"></param>
-        private void WriteMessage(object message, Exception ex)
-        {
-            StringBuilder messageBuilder = new StringBuilder(message.ToString());
-
-            if (ex!=null)
-            {
-                messageBuilder.Append("\n\t");
-                messageBuilder.Append(ex.ToString());
-            }
-
-            _messages.Add(messageBuilder.ToString());
-        }
-
-        /// <summary>
-        /// Writes messages to a log file
-        /// </summary>
-        /// <param name="logFile"></param>
-        public void WriteMessages(string logFile)
-        {
-            File.AppendAllLines(logFile, _messages);
-        }
     }
 }

@@ -1,15 +1,11 @@
-﻿using Hhogdev.SitecorePackageDeployer.Tasks;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Threading;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
+using Hhogdev.SitecorePackageDeployer.Tasks;
 
 namespace Hhogdev.SitecorePackageDeployer.Web.sitecore.admin
 {
-    public partial class StartSitecorePackageDeployer : System.Web.UI.Page
+    public partial class StartSitecorePackageDeployer : Page
     {
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -18,9 +14,9 @@ namespace Hhogdev.SitecorePackageDeployer.Web.sitecore.admin
                 InstallPackage.ResetInstallState();
             }
 
-            ThreadPool.QueueUserWorkItem((ctx) =>
+            ThreadPool.QueueUserWorkItem(ctx =>
             {
-                InstallPackage installer = new InstallPackage();
+                var installer = new InstallPackage();
                 installer.Run();
             });
         }

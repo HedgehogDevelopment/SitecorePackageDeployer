@@ -1,83 +1,80 @@
-﻿using Sitecore.Configuration;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Reflection;
+using System.Threading;
+using System.Xml.Serialization;
+using Hhogdev.SitecorePackageDeployer.Logging;
+using Hhogdev.SitecorePackageDeployer.Metadata;
+using log4net.Repository.Hierarchy;
+using log4net.spi;
+using Newtonsoft.Json;
+using Sitecore;
+using Sitecore.Configuration;
+using Sitecore.Data;
 using Sitecore.Diagnostics;
 using Sitecore.IO;
+using Sitecore.SecurityModel;
 using Sitecore.Update;
 using Sitecore.Update.Installer;
 using Sitecore.Update.Installer.Exceptions;
 using Sitecore.Update.Installer.Installer.Utils;
 using Sitecore.Update.Installer.Utils;
 using Sitecore.Update.Utils;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using log4net.spi;
-using Hhogdev.SitecorePackageDeployer.Logging;
-using log4net.Repository.Hierarchy;
-using System.Threading;
-using Sitecore;
-using Sitecore.Update.Metadata;
-using Hhogdev.SitecorePackageDeployer.Metadata;
-using System.Xml.Serialization;
 using Sitecore.Web;
-using System.Net;
-using System.Reflection;
-using Sitecore.SecurityModel;
-using Sitecore.Data;
-using Sitecore.Syndication;
 
 namespace Hhogdev.SitecorePackageDeployer.Tasks
 {
     public class InstallPackage
     {
-        internal enum InstallerState
-        {
-            Ready = 0,
-            InstallingPackage = 1,
-            WaitingForPostSteps = 2,
-            InstallingPostSteps = 3
-        }
-
         internal const string STARTUP_POST_STEP_PACKAGE_FILENAME = "StartPostStepPackage.xml";
         internal const string SUCCESS = "Success";
         internal const string FAIL = "Fail";
         internal const string INSTALLER_STATE_PROPERTY = "SPD_InstallerState_";
 
-        static string sitecoreUpdatePath = Assembly.GetAssembly(typeof(PackageInstallationInfo)).Location;
-        static Assembly sitecoreUpdateAssembly = Assembly.LoadFile(sitecoreUpdatePath);
-        FileVersionInfo sitecoreUpdateVersionInfo = FileVersionInfo.GetVersionInfo(sitecoreUpdateAssembly.Location);
-        static Type updateHelperType = sitecoreUpdateAssembly.GetType("Sitecore.Update.UpdateHelper");
+        private static readonly string sitecoreUpdatePath =
+            Assembly.GetAssembly(typeof(PackageInstallationInfo)).Location;
+
+        private static readonly Assembly sitecoreUpdateAssembly = Assembly.LoadFile(sitecoreUpdatePath);
+        private static readonly Type updateHelperType = sitecoreUpdateAssembly.GetType("Sitecore.Update.UpdateHelper");
+
+        private readonly FileVersionInfo sitecoreUpdateVersionInfo =
+            FileVersionInfo.GetVersionInfo(sitecoreUpdateAssembly.Location);
 
         //Points at the folder where new packages will be stored
-        string _packageSource;
-        //Url to make a request to for restarting the web server
-        string _restartUrl;
-        //File for restarting the web server
-        string _restartFile;
-        //Determines if the config files should be updated
-        bool _updateConfigurationFiles;
+        private string _packageSource;
 
-        public static bool ShutdownDetected { get; set; }
+        //File for restarting the web server
+        private string _restartFile;
+
+        //Url to make a request to for restarting the web server
+        private string _restartUrl;
+
+        //Determines if the config files should be updated
+        private bool _updateConfigurationFiles;
 
         public InstallPackage()
         {
             LoadSettings();
         }
 
+        public static bool ShutdownDetected { get; set; }
+
         private void LoadSettings()
         {
             _packageSource = GetPackageSource();
             _restartUrl = Settings.GetSetting("SitecorePackageDeployer.RestartUrl");
             _restartFile = GetRestartFile();
-            _updateConfigurationFiles = Settings.GetBoolSetting("SitecorePackageDeployer.UpdateConfigurationFiles", true);
-
+            _updateConfigurationFiles =
+                Settings.GetBoolSetting("SitecorePackageDeployer.UpdateConfigurationFiles", true);
         }
 
         internal static string GetPackageSource()
         {
-            string packageSource = Settings.GetSetting("SitecorePackageDeployer.PackageSource");
+            var packageSource = Settings.GetSetting("SitecorePackageDeployer.PackageSource");
 
             //See if the package source is a web path instead of a file system path.
             if (packageSource.StartsWith("/"))
@@ -104,7 +101,7 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         }
 
         /// <summary>
-        /// Installs the packages found in the package source folder.
+        ///     Installs the packages found in the package source folder.
         /// </summary>
         private void InstallPackages()
         {
@@ -116,8 +113,8 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                 return;
             }
 
-            InstallLogger installLogger = new InstallLogger(new RootLogger(Level.ALL));
-            
+            var installLogger = new InstallLogger(new RootLogger(Level.ALL));
+
             //Check to see if we need to force the start of an install since the state is incorrect
             if (File.Exists(_restartFile))
             {
@@ -128,7 +125,8 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
             //Return if another installation is happening
             if (GetInstallerState() != InstallerState.Ready)
             {
-                Log.Info(string.Format("Install packages skipped because install state is {0}. ", GetInstallerState()), this);
+                Log.Info(string.Format("Install packages skipped because install state is {0}. ", GetInstallerState()),
+                    this);
 
                 return;
             }
@@ -150,9 +148,10 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                 using (new SecurityDisabler())
                 {
                     //Find pending packages. This loop may not complete if there were binary/config changes
-                    foreach (string updatePackageFilename in Directory.GetFiles(_packageSource, "*.update", SearchOption.TopDirectoryOnly).OrderBy(f => f))
+                    foreach (var updatePackageFilename in Directory
+                                 .GetFiles(_packageSource, "*.update", SearchOption.TopDirectoryOnly).OrderBy(f => f))
                     {
-                        string updatePackageFilenameStripped = updatePackageFilename.Split('\\').Last();
+                        var updatePackageFilenameStripped = updatePackageFilename.Split('\\').Last();
                         if (ShutdownDetected)
                         {
                             Log.Info("Install packages aborting due to shutdown", this);
@@ -165,15 +164,16 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                             break;
                         }
 
-                        Log.Info(String.Format("Begin Installation: {0}", updatePackageFilenameStripped), this);
+                        Log.Info(string.Format("Begin Installation: {0}", updatePackageFilenameStripped), this);
 
                         string installationHistoryRoot = null;
-                        List<ContingencyEntry> logMessages = new List<ContingencyEntry>();
+                        var logMessages = new List<ContingencyEntry>();
 
-                        PostStepDetails postStepDetails = new PostStepDetails
+                        var postStepDetails = new PostStepDetails
                         {
                             PostStepPackageFilename = updatePackageFilename,
-                            ResultFileName = Path.Combine(Path.GetDirectoryName(updatePackageFilename), Path.GetFileNameWithoutExtension(updatePackageFilename) + ".json")
+                            ResultFileName = Path.Combine(Path.GetDirectoryName(updatePackageFilename),
+                                Path.GetFileNameWithoutExtension(updatePackageFilename) + ".json")
                         };
 
                         string installStatus = null;
@@ -183,14 +183,16 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                             //Run the installer
                             if (sitecoreUpdateVersionInfo.ProductMajorPart == 1)
                             {
-                                logMessages = UpdateHelper.Install(BuildPackageInfo(updatePackageFilename), installLogger, out installationHistoryRoot);
+                                logMessages = UpdateHelper.Install(BuildPackageInfo(updatePackageFilename),
+                                    installLogger, out installationHistoryRoot);
                             }
                             else
                             {
-                                object[] installationParamaters = new object[] { BuildReflectedPackageInfo(updatePackageFilename), installLogger, null };
+                                object[] installationParamaters =
+                                    { BuildReflectedPackageInfo(updatePackageFilename), installLogger, null };
                                 logMessages = (List<ContingencyEntry>)updateHelperType.InvokeMember("Install",
-                                BindingFlags.InvokeMethod | BindingFlags.Static | BindingFlags.Public,
-                                null, null, installationParamaters, null);
+                                    BindingFlags.InvokeMethod | BindingFlags.Static | BindingFlags.Public,
+                                    null, null, installationParamaters, null);
                                 installationHistoryRoot = installationParamaters[2].ToString();
                             }
 
@@ -220,7 +222,8 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                                 ExecutePostSteps(installLogger, postStepDetails, false);
                                 installStatus = SUCCESS;
 
-                                Log.Info(String.Format("Installation Complete: {0}", updatePackageFilenameStripped), this);
+                                Log.Info(string.Format("Installation Complete: {0}", updatePackageFilenameStripped),
+                                    this);
                                 SetInstallerState(InstallerState.InstallingPackage);
                             }
                         }
@@ -237,10 +240,11 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                         catch (Exception ex)
                         {
                             installStatus = FAIL;
-                            Log.Error(String.Format("Installation Failed: {0}", updatePackageFilenameStripped), ex, this);
+                            Log.Error(string.Format("Installation Failed: {0}", updatePackageFilenameStripped), ex,
+                                this);
                             installLogger.Fatal("Package install failed", ex);
 
-                            ThreadPool.QueueUserWorkItem(new WaitCallback((ctx) =>
+                            ThreadPool.QueueUserWorkItem(ctx =>
                             {
                                 try
                                 {
@@ -251,13 +255,14 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                                     GC.Collect(2);
                                     GC.WaitForPendingFinalizers();
 
-                                    File.Move(updatePackageFilename, updatePackageFilename + ".error_" + DateTime.Now.ToString("yyyyMMdd.hhmmss"));
+                                    File.Move(updatePackageFilename,
+                                        updatePackageFilename + ".error_" + DateTime.Now.ToString("yyyyMMdd.hhmmss"));
                                 }
                                 catch (Exception ex1)
                                 {
                                     Log.Error("Error moving broken package", ex1, this);
                                 }
-                            }));
+                            });
 
                             break;
                         }
@@ -292,82 +297,87 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         {
             Log.Info(string.Format("Setting installer state to {0}", installState), typeof(InstallPackage));
 
-            Database coreDb = Database.GetDatabase("core");
+            var coreDb = Database.GetDatabase("core");
             // Use reflection to get the int value because the properties base class changed in 9.3
             if (coreDb.GetType().Assembly.GetName().Version.Major >= 14)
             {
                 //coreDb.PropertyStore.SetIntValue(INSTALLER_STATE_PROPERTY + Environment.MachineName, (int)installState);
 
-                PropertyInfo propertyStorePropertyInfo = coreDb.GetType().GetProperty("PropertyStore");
-                MethodInfo propertyStoreGetMethod = propertyStorePropertyInfo.GetGetMethod();
-                object propertyStore = propertyStoreGetMethod.Invoke(coreDb, null);
+                var propertyStorePropertyInfo = coreDb.GetType().GetProperty("PropertyStore");
+                var propertyStoreGetMethod = propertyStorePropertyInfo.GetGetMethod();
+                var propertyStore = propertyStoreGetMethod.Invoke(coreDb, null);
 
-                MethodInfo setIntValueMethodInfo = propertyStore.GetType().GetMethod("SetIntValue");
-                setIntValueMethodInfo.Invoke(propertyStore, new object[] { INSTALLER_STATE_PROPERTY + Environment.MachineName, installState });
+                var setIntValueMethodInfo = propertyStore.GetType().GetMethod("SetIntValue");
+                setIntValueMethodInfo.Invoke(propertyStore,
+                    new object[] { INSTALLER_STATE_PROPERTY + Environment.MachineName, installState });
             }
             else
             {
                 //coreDb.Properties.SetIntValue(INSTALLER_STATE_PROPERTY + Environment.MachineName, (int)installState);
 
-                PropertyInfo propertiesPropertyInfo = coreDb.GetType().GetProperty("Properties");
-                MethodInfo propertiesGetMethod = propertiesPropertyInfo.GetGetMethod();
-                object properties = propertiesGetMethod.Invoke(coreDb, null);
+                var propertiesPropertyInfo = coreDb.GetType().GetProperty("Properties");
+                var propertiesGetMethod = propertiesPropertyInfo.GetGetMethod();
+                var properties = propertiesGetMethod.Invoke(coreDb, null);
 
-                MethodInfo setIntValueMethodInfo = properties.GetType().GetMethod("SetIntValue");
-                setIntValueMethodInfo.Invoke(properties, new object[] { INSTALLER_STATE_PROPERTY + Environment.MachineName, installState });
+                var setIntValueMethodInfo = properties.GetType().GetMethod("SetIntValue");
+                setIntValueMethodInfo.Invoke(properties,
+                    new object[] { INSTALLER_STATE_PROPERTY + Environment.MachineName, installState });
             }
         }
 
         /// <summary>
-        /// Gets the current install state
+        ///     Gets the current install state
         /// </summary>
         /// <returns></returns>
         internal static InstallerState GetInstallerState()
         {
-            Database coreDb = Database.GetDatabase("core");
+            var coreDb = Database.GetDatabase("core");
 
             // Use reflection to get the int value because the properties base class changed in 9.3
             if (coreDb.GetType().Assembly.GetName().Version.Major >= 14)
             {
                 //return (InstallerState)coreDb.PropertyStore.GetIntValue(INSTALLER_STATE_PROPERTY + Environment.MachineName, (int)InstallerState.Ready);
 
-                PropertyInfo propertyStorePropertyInfo = coreDb.GetType().GetProperty("PropertyStore");
-                MethodInfo propertyStoreGetMethod = propertyStorePropertyInfo.GetGetMethod();
-                object propertyStore = propertyStoreGetMethod.Invoke(coreDb, null);
+                var propertyStorePropertyInfo = coreDb.GetType().GetProperty("PropertyStore");
+                var propertyStoreGetMethod = propertyStorePropertyInfo.GetGetMethod();
+                var propertyStore = propertyStoreGetMethod.Invoke(coreDb, null);
 
-                MethodInfo getIntValueMethodInfo = propertyStore.GetType().GetMethod("GetIntValue");
-                return (InstallerState)getIntValueMethodInfo.Invoke(propertyStore, new object[] { INSTALLER_STATE_PROPERTY + Environment.MachineName, (int)InstallerState.Ready });
+                var getIntValueMethodInfo = propertyStore.GetType().GetMethod("GetIntValue");
+                return (InstallerState)getIntValueMethodInfo.Invoke(propertyStore,
+                    new object[] { INSTALLER_STATE_PROPERTY + Environment.MachineName, (int)InstallerState.Ready });
             }
             else
             {
                 //return (InstallerState)coreDb.Properties.GetIntValue(INSTALLER_STATE_PROPERTY + Environment.MachineName, (int)InstallerState.Ready);
 
-                PropertyInfo propertiesPropertyInfo = coreDb.GetType().GetProperty("Properties");
-                MethodInfo propertiesGetMethod = propertiesPropertyInfo.GetGetMethod();
-                object properties = propertiesGetMethod.Invoke(coreDb, null);
+                var propertiesPropertyInfo = coreDb.GetType().GetProperty("Properties");
+                var propertiesGetMethod = propertiesPropertyInfo.GetGetMethod();
+                var properties = propertiesGetMethod.Invoke(coreDb, null);
 
-                MethodInfo getIntValueMethodInfo = properties.GetType().GetMethod("GetIntValue");
-                return (InstallerState)getIntValueMethodInfo.Invoke(properties, new object[] { INSTALLER_STATE_PROPERTY + Environment.MachineName, (int)InstallerState.Ready });
+                var getIntValueMethodInfo = properties.GetType().GetMethod("GetIntValue");
+                return (InstallerState)getIntValueMethodInfo.Invoke(properties,
+                    new object[] { INSTALLER_STATE_PROPERTY + Environment.MachineName, (int)InstallerState.Ready });
             }
         }
 
         /// <summary>
-        /// Restarts the web server by making a request to the webroot. The request has a short timeout and is expected to fail. 
-        /// The purpose is to initiate a request to IIS to restart the AppPool. The Url is determined by the Sitecore API or an optional config parameter.
+        ///     Restarts the web server by making a request to the webroot. The request has a short timeout and is expected to
+        ///     fail.
+        ///     The purpose is to initiate a request to IIS to restart the AppPool. The Url is determined by the Sitecore API or an
+        ///     optional config parameter.
         /// </summary>
         private void RestartSitecoreServer()
         {
-
             try
             {
                 //Force restart of all apppools pointing the website. This can happen during long installs
                 Log.Info("Forcing restart", this);
 
-                string configFile = MainUtil.MapPath("/App_Config/Include/SPD_Restart.config");
+                var configFile = MainUtil.MapPath("/App_Config/Include/SPD_Restart.config");
 
-                using (FileStream fs = File.Open(configFile, FileMode.Create))
+                using (var fs = File.Open(configFile, FileMode.Create))
                 {
-                    using (StreamWriter sw = new StreamWriter(fs))
+                    using (var sw = new StreamWriter(fs))
                     {
                         sw.WriteLine("<!-- Restart -->");
                     }
@@ -381,7 +391,7 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                 Log.Error("Exception when forcing restart", ex, this);
             }
 
-            string url = _restartUrl;
+            var url = _restartUrl;
 
             if (string.IsNullOrEmpty(_restartUrl))
             {
@@ -390,28 +400,28 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
 
             Log.Info("Sitecore Package Deployer is attempting to restart Sitecore at the url: " + url, this);
 
-            WebRequest req = WebRequest.Create(url);
+            var req = WebRequest.Create(url);
             req.Timeout = 100;
 
             try
             {
-                using (WebResponse resp = req.GetResponse())
+                using (var resp = req.GetResponse())
                 {
-
                 }
             }
             catch (Exception)
-            { }
+            {
+            }
         }
 
         /// <summary>
-        /// Creates a file that causes post install steps to be executed at startup
+        ///     Creates a file that causes post install steps to be executed at startup
         /// </summary>
         /// <param name="updatePackageFilename"></param>
         /// <param name="historyPath"></param>
         private void RunPostStepsAtStartup(string updatePackageFilename, string historyPath, PostStepDetails details)
         {
-            string startupPostStepPackageFile = Path.Combine(_packageSource, STARTUP_POST_STEP_PACKAGE_FILENAME);
+            var startupPostStepPackageFile = Path.Combine(_packageSource, STARTUP_POST_STEP_PACKAGE_FILENAME);
 
             //remove post step flag file if it exists
             if (File.Exists(startupPostStepPackageFile))
@@ -419,7 +429,7 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
                 File.Delete(startupPostStepPackageFile);
             }
 
-            XmlSerializer serializer = new XmlSerializer(typeof(PostStepDetails));
+            var serializer = new XmlSerializer(typeof(PostStepDetails));
             using (TextWriter writer = new StreamWriter(startupPostStepPackageFile))
             {
                 serializer.Serialize(writer, details);
@@ -427,29 +437,33 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         }
 
         /// <summary>
-        /// Executes the post install steps
+        ///     Executes the post install steps
         /// </summary>
         /// <param name="postStepDetails"></param>
-        internal static void ExecutePostSteps(InstallLogger installLogger, PostStepDetails postStepDetails, bool setReadyStateWhenDone)
+        internal static void ExecutePostSteps(InstallLogger installLogger, PostStepDetails postStepDetails,
+            bool setReadyStateWhenDone)
         {
             try
             {
                 SetInstallerState(InstallerState.InstallingPostSteps);
 
                 //Load the metadata from the update package
-                MetadataView metedateView = UpdateHelper.LoadMetadata(postStepDetails.PostStepPackageFilename);
-                List<ContingencyEntry> logMessages = new List<ContingencyEntry>();
+                var metedateView = UpdateHelper.LoadMetadata(postStepDetails.PostStepPackageFilename);
+                var logMessages = new List<ContingencyEntry>();
 
                 try
                 {
                     //Execute the post install steps
-                    DiffInstaller diffInstaller = new DiffInstaller(UpgradeAction.Upgrade);
-                    diffInstaller.ExecutePostInstallationInstructions(postStepDetails.PostStepPackageFilename, postStepDetails.HistoryPath, InstallMode.Update, metedateView, installLogger, ref logMessages);
+                    var diffInstaller = new DiffInstaller(UpgradeAction.Upgrade);
+                    diffInstaller.ExecutePostInstallationInstructions(postStepDetails.PostStepPackageFilename,
+                        postStepDetails.HistoryPath, InstallMode.Update, metedateView, installLogger, ref logMessages);
                 }
                 finally
                 {
                     //Move the update package into the history folder
-                    File.Move(postStepDetails.PostStepPackageFilename, Path.Combine(postStepDetails.HistoryPath, Path.GetFileName(postStepDetails.PostStepPackageFilename)));
+                    File.Move(postStepDetails.PostStepPackageFilename,
+                        Path.Combine(postStepDetails.HistoryPath,
+                            Path.GetFileName(postStepDetails.PostStepPackageFilename)));
                 }
             }
             catch (Exception ex)
@@ -473,19 +487,21 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         }
 
         /// <summary>
-        /// Locates changed configs installed by the package installer
+        ///     Locates changed configs installed by the package installer
         /// </summary>
         private void FindAndUpdateChangedConfigs(string installPackageName)
         {
-            string appConfigFolder = MainUtil.MapPath("/");
+            var appConfigFolder = MainUtil.MapPath("/");
 
-            foreach (string newConfigFile in Directory.GetFiles(appConfigFolder, "*.config." + installPackageName, SearchOption.AllDirectories))
+            foreach (var newConfigFile in Directory.GetFiles(appConfigFolder, "*.config." + installPackageName,
+                         SearchOption.AllDirectories))
             {
                 Log.Info(string.Format("Found changed config {0}", newConfigFile), this);
 
-                int configExtensionPos = newConfigFile.LastIndexOf(".config") + 7;
-                string oldConfigFile = Path.Combine(Path.GetDirectoryName(newConfigFile), newConfigFile.Substring(0, configExtensionPos));
-                string backupConfigFile = newConfigFile + string.Format(".backup{0:yyyyMMddhhmmss}", DateTime.Now);
+                var configExtensionPos = newConfigFile.LastIndexOf(".config") + 7;
+                var oldConfigFile = Path.Combine(Path.GetDirectoryName(newConfigFile),
+                    newConfigFile.Substring(0, configExtensionPos));
+                var backupConfigFile = newConfigFile + string.Format(".backup{0:yyyyMMddhhmmss}", DateTime.Now);
 
                 //Backup the existing config file
                 if (File.Exists(oldConfigFile))
@@ -520,7 +536,7 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         }
 
         /// <summary>
-        /// Writes the log messages to the message log
+        ///     Writes the log messages to the message log
         /// </summary>
         /// <param name="installationHistoryRoot"></param>
         /// <param name="logMessages"></param>
@@ -530,33 +546,34 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
             {
                 if (string.IsNullOrEmpty(installationHistoryRoot))
                 {
-                    installationHistoryRoot = FileUtil.MakePath(FileUtils.InstallationHistoryRoot, "Upgrade_FAILURE_" + DateTime.Now.ToString("yyyyMMddTHHmmss") + DateTime.Now.Millisecond);
+                    installationHistoryRoot = FileUtil.MakePath(FileUtils.InstallationHistoryRoot,
+                        "Upgrade_FAILURE_" + DateTime.Now.ToString("yyyyMMddTHHmmss") + DateTime.Now.Millisecond);
                 }
 
-                string messagesFile = Path.Combine(installationHistoryRoot, "messages.xml");
+                var messagesFile = Path.Combine(installationHistoryRoot, "messages.xml");
                 FileUtil.EnsureFolder(messagesFile);
 
-                using (FileStream fileStream = File.Create(messagesFile))
+                using (var fileStream = File.Create(messagesFile))
                 {
-                    XmlEntrySerializer xmlEntrySerializer = new XmlEntrySerializer();
+                    var xmlEntrySerializer = new XmlEntrySerializer();
 
                     //For some reason, this has changed in Sitecore 9. We are using reflection to get it because the fileStream parameter can be a FileStream or Stream
                     //xmlEntrySerializer.Serialize(logMessages, fileStream);
-                    Type serializerType = xmlEntrySerializer.GetType();
+                    var serializerType = xmlEntrySerializer.GetType();
 
-                    MethodInfo serializeMethod = serializerType.GetMethod("Serialize",
+                    var serializeMethod = serializerType.GetMethod("Serialize",
                         BindingFlags.Public | BindingFlags.Instance,
                         null,
-                        new Type[] { logMessages.GetType(), typeof(FileStream) },
+                        new[] { logMessages.GetType(), typeof(FileStream) },
                         null);
 
                     if (serializeMethod == null)
                     {
                         serializeMethod = serializerType.GetMethod("Serialize",
-                        BindingFlags.Public | BindingFlags.Instance,
-                        null,
-                        new Type[] { logMessages.GetType(), typeof(Stream) },
-                        null);
+                            BindingFlags.Public | BindingFlags.Instance,
+                            null,
+                            new[] { logMessages.GetType(), typeof(Stream) },
+                            null);
                     }
 
                     if (serializeMethod != null)
@@ -572,7 +589,7 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         }
 
         /// <summary>
-        /// Writes the notification .json to the install folder
+        ///     Writes the notification .json to the install folder
         /// </summary>
         /// <param name="status"></param>
         /// <param name="postStepDetails"></param>
@@ -580,16 +597,16 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         {
             try
             {
-                using (StreamWriter sw = File.CreateText(postStepDetails.ResultFileName))
+                using (var sw = File.CreateText(postStepDetails.ResultFileName))
                 {
-                    CompletionNotification completionNotification = new CompletionNotification
+                    var completionNotification = new CompletionNotification
                     {
                         Status = status,
                         ServerName = Environment.MachineName,
                         DeployHistoryPath = postStepDetails.HistoryPath
                     };
 
-                    sw.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(completionNotification));
+                    sw.WriteLine(JsonConvert.SerializeObject(completionNotification));
                 }
             }
             catch (Exception ex)
@@ -605,11 +622,11 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
 
         private PackageInstallationInfo BuildPackageInfo(string updatePackageFilename)
         {
-            PackageInstallationInfo installationInfo = new PackageInstallationInfo
+            var installationInfo = new PackageInstallationInfo
             {
                 Action = UpgradeAction.Upgrade,
                 Mode = InstallMode.Install,
-                Path = updatePackageFilename,
+                Path = updatePackageFilename
             };
             return installationInfo;
         }
@@ -617,13 +634,13 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         private object BuildReflectedPackageInfo(string updatePackageFilename)
         {
             //Get PackageInstallationInfo type and create instance for reflection
-            Type packageInstallationInfoType = sitecoreUpdateAssembly.GetType("Sitecore.Update.PackageInstallationInfo");
-            object packageInstallationInfoInstance = Activator.CreateInstance(packageInstallationInfoType);
+            var packageInstallationInfoType = sitecoreUpdateAssembly.GetType("Sitecore.Update.PackageInstallationInfo");
+            var packageInstallationInfoInstance = Activator.CreateInstance(packageInstallationInfoType);
             //Get and set properties
-            PropertyInfo actionPropertyInfo = packageInstallationInfoType.GetProperty("Action");
-            PropertyInfo modePropertyInfo = packageInstallationInfoType.GetProperty("Mode");
-            PropertyInfo pathPropertyInfo = packageInstallationInfoType.GetProperty("Path");
-            PropertyInfo processingModePropertyInfo = packageInstallationInfoType.GetProperty("ProcessingMode");
+            var actionPropertyInfo = packageInstallationInfoType.GetProperty("Action");
+            var modePropertyInfo = packageInstallationInfoType.GetProperty("Mode");
+            var pathPropertyInfo = packageInstallationInfoType.GetProperty("Path");
+            var processingModePropertyInfo = packageInstallationInfoType.GetProperty("ProcessingMode");
             actionPropertyInfo.SetValue(packageInstallationInfoInstance, GetUpgradeActionValue("Upgrade"), null);
             modePropertyInfo.SetValue(packageInstallationInfoInstance, GetInstallModeValue("Install"), null);
             pathPropertyInfo.SetValue(packageInstallationInfoInstance, updatePackageFilename, null);
@@ -632,86 +649,83 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
         }
 
         /// <summary>
-        ///   Gets upgrade action value.
+        ///     Gets upgrade action value.
         /// </summary>
-        ///
         /// <remarks>
-        ///   Created  on 12/27/2016.
+        ///     Created  on 12/27/2016.
         /// </remarks>
-        ///
-        /// <param name="upgradeAction"> The upgrade action accepting any of the following values 
-        ///  {
-        ///   "Preview",
-        ///   "Upgrade"
-        ///  }
-        /// from Sitecore.Update v2 dll's Sitecore.Update.Installer.Utils.UpgradeAction enum.
+        /// <param name="upgradeAction">
+        ///     The upgrade action accepting any of the following values
+        ///     {
+        ///     "Preview",
+        ///     "Upgrade"
+        ///     }
+        ///     from Sitecore.Update v2 dll's Sitecore.Update.Installer.Utils.UpgradeAction enum.
         /// </param>
-        /// 
-        ///
         /// <returns>
-        ///   The upgrade action value.
+        ///     The upgrade action value.
         /// </returns>
-
         private object GetUpgradeActionValue(string upgradeAction)
         {
-            Type upgradeActionType = sitecoreUpdateAssembly.GetType("Sitecore.Update.Installer.Utils.UpgradeAction");
+            var upgradeActionType = sitecoreUpdateAssembly.GetType("Sitecore.Update.Installer.Utils.UpgradeAction");
             return Enum.Parse(upgradeActionType, upgradeAction);
         }
 
         /// <summary>
-        ///   Gets install mode value.
+        ///     Gets install mode value.
         /// </summary>
-        ///
         /// <remarks>
-        ///   Created  on 12/27/2016.
+        ///     Created  on 12/27/2016.
         /// </remarks>
-        ///
-        /// <param name="installMode">  The install mode accepting any of the following values
-        ///   {
-        ///   "Install",
-        ///		"Update"
-        ///   }
-        /// from Sitecore.Update v2 dll's Sitecore.Update.Utils.InstallMode enum
+        /// <param name="installMode">
+        ///     The install mode accepting any of the following values
+        ///     {
+        ///     "Install",
+        ///     "Update"
+        ///     }
+        ///     from Sitecore.Update v2 dll's Sitecore.Update.Utils.InstallMode enum
         /// </param>
-        ///
         /// <returns>
-        ///   The install mode value.
+        ///     The install mode value.
         /// </returns>
-
         private object GetInstallModeValue(string installMode)
         {
-            Type installModeType = sitecoreUpdateAssembly.GetType("Sitecore.Update.Utils.InstallMode");
+            var installModeType = sitecoreUpdateAssembly.GetType("Sitecore.Update.Utils.InstallMode");
             return Enum.Parse(installModeType, installMode);
         }
 
         /// <summary>
-        ///   Gets processing mode value.
+        ///     Gets processing mode value.
         /// </summary>
-        ///
         /// <remarks>
-        ///   Created  on 12/27/2016.
+        ///     Created  on 12/27/2016.
         /// </remarks>
-        ///
-        /// <param name="processingMode"> The processing mode accepting any of the following values 
-        ///  {
-        ///  "None",
-        ///  "Files",
-        ///  "Items",
-        ///  "PostStep",
-        ///  "All"
-        /// }
-        /// from Sitecore.Update v2 dll's Sitecore.Update.Utils.ProcessingMode enum.
+        /// <param name="processingMode">
+        ///     The processing mode accepting any of the following values
+        ///     {
+        ///     "None",
+        ///     "Files",
+        ///     "Items",
+        ///     "PostStep",
+        ///     "All"
+        ///     }
+        ///     from Sitecore.Update v2 dll's Sitecore.Update.Utils.ProcessingMode enum.
         /// </param>
-        /// 
-        ///
         /// <returns>
-        ///   The processing mode value.
+        ///     The processing mode value.
         /// </returns>
-
         private object GetProcessingModeValue(string processingMode)
         {
-            Type processingModeType = sitecoreUpdateAssembly.GetType("Sitecore.Update.Utils.ProcessingMode");
+            var processingModeType = sitecoreUpdateAssembly.GetType("Sitecore.Update.Utils.ProcessingMode");
             return Enum.Parse(processingModeType, processingMode);
+        }
+
+        internal enum InstallerState
+        {
+            Ready = 0,
+            InstallingPackage = 1,
+            WaitingForPostSteps = 2,
+            InstallingPostSteps = 3
         }
     }
 }

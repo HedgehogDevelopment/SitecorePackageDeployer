@@ -1,25 +1,24 @@
-﻿using Hhogdev.SitecorePackageDeployer.Logging;
-using Hhogdev.SitecorePackageDeployer.Metadata;
-using Hhogdev.SitecorePackageDeployer.Tasks;
-using log4net.Repository.Hierarchy;
-using log4net.spi;
-using Sitecore.Configuration;
-using Sitecore.Diagnostics;
-using Sitecore.Pipelines;
-using Sitecore.SecurityModel;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Xml.Serialization;
+using Hhogdev.SitecorePackageDeployer.Logging;
+using Hhogdev.SitecorePackageDeployer.Metadata;
+using Hhogdev.SitecorePackageDeployer.Tasks;
+using log4net.Repository.Hierarchy;
+using log4net.spi;
+using Sitecore.Diagnostics;
+using Sitecore.Pipelines;
+using Sitecore.SecurityModel;
 
 namespace Hhogdev.SitecorePackageDeployer.Pipelines.Initialize
 {
     public class RunPostInstallSteps
     {
-        string _packageSource;
-        string _restartFile;
+        private string _packageSource;
+        private string _restartFile;
 
         public RunPostInstallSteps()
         {
@@ -34,7 +33,9 @@ namespace Hhogdev.SitecorePackageDeployer.Pipelines.Initialize
 
         public void Process(PipelineArgs args)
         {
-            Log.Info("Sitecore package deployer starting. Version: " + FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location). FileVersion, this);
+            Log.Info(
+                "Sitecore package deployer starting. Version: " + FileVersionInfo
+                    .GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion, this);
 
             //Check to see if we need to force the start of an install since the state is incorrect
             if (File.Exists(_restartFile))
@@ -44,8 +45,9 @@ namespace Hhogdev.SitecorePackageDeployer.Pipelines.Initialize
             }
 
             //Check to see if we can run post steps
-            InstallPackage.InstallerState state = InstallPackage.GetInstallerState();
-            if (state == InstallPackage.InstallerState.InstallingPackage || state == InstallPackage.InstallerState.InstallingPostSteps)
+            var state = InstallPackage.GetInstallerState();
+            if (state == InstallPackage.InstallerState.InstallingPackage ||
+                state == InstallPackage.InstallerState.InstallingPostSteps)
             {
                 Log.Warn(string.Format("Can't run post steps. Package installer state is {0}", state), this);
 
@@ -66,16 +68,17 @@ namespace Hhogdev.SitecorePackageDeployer.Pipelines.Initialize
 
         private void InstallAdditionalPackages()
         {
-            ThreadPool.QueueUserWorkItem((ctx) =>
+            ThreadPool.QueueUserWorkItem(ctx =>
             {
-                InstallPackage installer = new InstallPackage();
+                var installer = new InstallPackage();
                 installer.Run();
             });
         }
 
         private void RunPostInitializeStepsIfNeeded()
         {
-            string startupPostStepPackageFile = Path.Combine(_packageSource, InstallPackage.STARTUP_POST_STEP_PACKAGE_FILENAME);
+            var startupPostStepPackageFile =
+                Path.Combine(_packageSource, InstallPackage.STARTUP_POST_STEP_PACKAGE_FILENAME);
 
             //remove post step flag file if it exists
             if (File.Exists(startupPostStepPackageFile))
@@ -85,14 +88,14 @@ namespace Hhogdev.SitecorePackageDeployer.Pipelines.Initialize
                     using (new SecurityDisabler())
                     {
                         //Load the post step details
-                        XmlSerializer serializer = new XmlSerializer(typeof(PostStepDetails));
+                        var serializer = new XmlSerializer(typeof(PostStepDetails));
                         using (TextReader writer = new StreamReader(startupPostStepPackageFile))
                         {
-                            PostStepDetails details = serializer.Deserialize(writer) as PostStepDetails;
+                            var details = serializer.Deserialize(writer) as PostStepDetails;
 
                             if (details != null)
                             {
-                                InstallLogger installLogger = new InstallLogger(new RootLogger(Level.ALL));
+                                var installLogger = new InstallLogger(new RootLogger(Level.ALL));
 
                                 try
                                 {
