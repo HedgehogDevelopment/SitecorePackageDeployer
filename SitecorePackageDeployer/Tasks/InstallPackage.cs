@@ -92,7 +92,14 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
 
         internal static string GetRestartFile()
         {
-            return Settings.GetSetting("SitecorePackageDeployer.RestartFile");
+            var restartFile = Settings.GetSetting("SitecorePackageDeployer.RestartFile");
+
+            if (restartFile.StartsWith("/"))
+            {
+                restartFile = MainUtil.MapPath(restartFile);
+            }
+
+            return restartFile;
         }
 
         public void Run()
@@ -116,8 +123,10 @@ namespace Hhogdev.SitecorePackageDeployer.Tasks
             var installLogger = new InstallLogger(new RootLogger(Level.ALL));
 
             //Check to see if we need to force the start of an install since the state is incorrect
+            Log.Info(string.Format("Checking for a restart file at {0}", _restartFile), this);
             if (File.Exists(_restartFile))
             {
+                Log.Info("Found a restart file", this);
                 File.Delete(_restartFile);
                 ResetInstallState();
             }
